@@ -1,4 +1,4 @@
-import ProveedorAutenticacion from "@/components/ProveedorAutenticacion";
+import ProveedorAutenticacion from "@/components/auth/ProveedorAutenticacion";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Work_Sans } from "next/font/google";
 import "./globals.css";
@@ -41,13 +41,11 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${workSans.variable} antialiased min-h-screen flex flex-col bg-gray-50`}
+        className={`${geistSans.variable} ${geistMono.variable} ${workSans.variable} antialiased`}
         suppressHydrationWarning
       >
         <ProveedorAutenticacion>
-          <main className="flex-1 w-full bg-gray-50 min-h-screen">
-            {children}
-          </main>
+          {children}
         </ProveedorAutenticacion>
       </body>
     </html>

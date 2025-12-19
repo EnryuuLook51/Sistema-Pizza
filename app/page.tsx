@@ -12,23 +12,24 @@ const DashboardSkeleton = () => (
 );
 
 // Imports Dinámicos: Solo se descargará el JS del componente que se use
-const DashboardPropietario = dynamic(() => import('@/components/DashboardPropietario'), {
+// Imports Dinámicos: Solo se descargará el JS del componente que se use
+const DashboardPropietario = dynamic(() => import('@/components/pages/DashboardPropietario'), {
   loading: () => <DashboardSkeleton />,
 });
-const DashboardGerente = dynamic(() => import('@/components/DashboardGerente'), {
+const DashboardGerente = dynamic(() => import('@/components/pages/DashboardGerente'), {
   loading: () => <DashboardSkeleton />,
 });
-const DashboardPizzero = dynamic(() => import('@/components/DashboardPizzero'), {
+const DashboardPizzero = dynamic(() => import('@/components/pages/DashboardPizzero'), {
   loading: () => <DashboardSkeleton />,
 });
-const DashboardAtencion = dynamic(() => import('@/components/DashboardAtencion'), {
+const DashboardAtencion = dynamic(() => import('@/components/pages/DashboardAtencion'), {
   loading: () => <DashboardSkeleton />,
 });
-const DashboardDelivery = dynamic(() => import('@/components/DashboardDelivery'), {
+const DashboardDelivery = dynamic(() => import('@/components/pages/DashboardDelivery'), {
   loading: () => <DashboardSkeleton />,
 });
 
-import { useAuth } from '@/components/ProveedorAutenticacion';
+import { useAuth } from '@/components/auth/ProveedorAutenticacion';
 
 export default function HomePage() {
   const { profile, loading } = useAuth();
@@ -51,7 +52,7 @@ export default function HomePage() {
     );
   }
 
-  // RENDERIZADO CONDICIONAL DE TUS HTMLs
+  // RENDERIZADO PARA NO SOBRECARGAR
   switch (profile.rol) {
     case 'admin':
       return <DashboardPropietario />;
