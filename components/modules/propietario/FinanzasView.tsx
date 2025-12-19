@@ -9,12 +9,16 @@ import {
   TrendingUp,
   Wallet
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface FinanzasViewProps {
   orders: Order[];
 }
 
 export default function FinanzasView({ orders }: FinanzasViewProps) {
+  const [hoveredBar, setHoveredBar] = useState<{ label: string, val: number } | null>(null);
+  const [chartView, setChartView] = useState<'weekly' | 'daily'>('weekly');
+
   // Filter valid completed orders for financial data
   const validOrders = orders.filter(o => o.estado !== 'cancelado');
   const totalRevenue = validOrders.reduce((acc, o) => acc + (o.total || o.items.reduce((s, i) => s + i.precio * i.cantidad, 0)), 0);
@@ -112,6 +116,111 @@ export default function FinanzasView({ orders }: FinanzasViewProps) {
               <p className="text-slate-400 font-medium text-sm">Utilidad Neta (Est.)</p>
               <h2 className="text-4xl font-black text-white mt-1">${netProfit.toFixed(2)}</h2>
             </div>
+          </div>
+        </div>
+
+        {/* NEW REVENUE CHART */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Evolución de Ingresos</h3>
+              <p className="text-slate-500 text-sm">
+                {chartView === 'weekly' ? 'Facturación diaria (últimos 7 días)' : 'Facturación por hora (Hoy)'}
+              </p>
+            </div>
+
+            <div className="flex bg-slate-100 p-1 rounded-lg">
+              <button
+                onClick={() => setChartView('weekly')}
+                className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${chartView === 'weekly' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Semanal
+              </button>
+              <button
+                onClick={() => setChartView('daily')}
+                className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${chartView === 'daily' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Diario (Hoy)
+              </button>
+            </div>
+          </div>
+
+          <div className="relative h-64 w-full flex items-end justify-between gap-4 z-0" onMouseLeave={() => setHoveredBar(null)}>
+            {/* Grid Lines */}
+            <div className="absolute inset-x-0 inset-y-0 flex flex-col justify-between pointer-events-none z-0">
+              <div className="border-t border-slate-100 border-dashed w-full h-px"></div>
+              <div className="border-t border-slate-100 border-dashed w-full h-px"></div>
+              <div className="border-t border-slate-100 border-dashed w-full h-px"></div>
+              <div className="border-t border-slate-100 border-dashed w-full h-px"></div>
+              <div className="border-t border-slate-200 w-full h-px"></div>
+            </div>
+
+            {(() => {
+              const today = new Date();
+              let chartData: { label: string, val: number, fullDate?: Date }[] = [];
+
+              if (chartView === 'weekly') {
+                const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+                const last7Days = Array.from({ length: 7 }, (_, i) => {
+                  const d = new Date(today);
+                  d.setDate(d.getDate() - (6 - i));
+                  return d;
+                });
+
+                chartData = last7Days.map(date => {
+                  const dStr = date.toDateString();
+                  const daily = validOrders.filter(o => new Date(o.createdAt).toDateString() === dStr)
+                    .reduce((sum, o) => sum + (o.total || o.items.reduce((s, i) => s + i.precio * i.cantidad, 0)), 0);
+                  return { label: days[date.getDay()], val: daily, fullDate: date };
+                });
+              } else {
+                // DAILY - Hourly breakdown
+                const todayStr = today.toDateString();
+                chartData = Array.from({ length: 24 }, (_, hour) => {
+                  const hourlyTotal = validOrders
+                    .filter(o => {
+                      const d = new Date(o.createdAt);
+                      return d.toDateString() === todayStr && d.getHours() === hour;
+                    })
+                    .reduce((sum, o) => sum + (o.total || o.items.reduce((s, i) => s + i.precio * i.cantidad, 0)), 0);
+                  return { label: `${hour}:00`, val: hourlyTotal };
+                });
+              }
+
+              const maxVal = Math.max(...chartData.map(d => d.val));
+              const scaleMax = maxVal > 0 ? maxVal * 1.2 : 100;
+
+              return chartData.map((d, i) => {
+                const height = (d.val / scaleMax) * 100;
+                const isHovered = hoveredBar?.label === d.label;
+
+                return (
+                  <div
+                    key={i}
+                    className="flex-1 flex flex-col justify-end items-center h-full relative z-10 group"
+                    onMouseEnter={() => setHoveredBar({ label: d.label, val: d.val })}
+                  >
+                    <div className="w-full relative px-1 sm:px-2 md:px-4 h-full flex items-end">
+                      <div
+                        className={`w-full rounded-t-lg transition-all duration-500 ease-out shadow-sm ${d.val > 0 ? 'bg-green-500' : 'bg-slate-100'} ${isHovered ? 'bg-green-400 scale-[1.02] shadow-md' : ''}`}
+                        style={{ height: `${height}%`, minHeight: d.val > 0 ? 4 : 4 }}
+                      ></div>
+                    </div>
+
+                    <span className={`mt-3 text-[10px] sm:text-xs font-bold truncate w-full text-center ${d.fullDate?.toDateString() === today.toDateString() ? 'text-green-600' : 'text-slate-400'}`}>
+                      {d.label}
+                    </span>
+
+                    {isHovered && (
+                      <div className="absolute bottom-full mb-2 bg-slate-900 text-white text-xs font-bold py-1.5 px-3 rounded-lg shadow-xl whitespace-nowrap z-50 pointer-events-none">
+                        <div className="opacity-60 text-[10px] mb-0.5">{chartView === 'weekly' ? 'Total Día' : 'Total Hora'}</div>
+                        ${d.val.toFixed(2)}
+                      </div>
+                    )}
+                  </div>
+                );
+              });
+            })()}
           </div>
         </div>
 

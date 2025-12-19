@@ -191,7 +191,7 @@ export default function DashboardGerente() {
               <span className="text-sm font-medium">Cerrar Sesión</span>
             </button>
             <div className="px-3">
-              <p className="text-xs text-slate-400 text-center opacity-60">v2.4.0 © PizzaOps</p>
+              <p className="text-xs text-slate-400 text-center opacity-60">v2.4.0 © Pizzeria Claren'z</p>
             </div>
           </div>
         </div>

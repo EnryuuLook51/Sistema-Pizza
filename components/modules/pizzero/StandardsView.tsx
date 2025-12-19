@@ -1,14 +1,10 @@
 import { Order } from '@/lib/types';
 import {
-  AlertCircle,
-  AlertTriangle,
-  ArrowRight,
   CheckCircle,
   Info,
   Lock,
   Scale,
-  Timer,
-  XCircle
+  Timer
 } from 'lucide-react';
 
 interface StandardsViewProps {
@@ -16,20 +12,6 @@ interface StandardsViewProps {
 }
 
 export default function StandardsView({ orders }: StandardsViewProps) {
-  // Extract defects/cancellations from orders
-  const defects = orders.flatMap(order =>
-    order.items
-      .filter(item => item.estado === 'cancelado')
-      .map(item => ({
-        id: order.id,
-        itemName: item.nombre,
-        reason: item.notas?.split('DEFECTO: ')[1] || 'Cancelado / Mermado',
-        time: item.timestamps?.cancelado || new Date(),
-        chef: 'Cocina' // Placeholder as we don't track user per item yet
-      }))
-  ).sort((a, b) => b.time.getTime() - a.time.getTime())
-    .slice(0, 5); // Show max 5 recent
-
   return (
     <div className="h-full flex flex-col gap-6 overflow-hidden">
 
@@ -60,7 +42,7 @@ export default function StandardsView({ orders }: StandardsViewProps) {
                 </div>
                 Estándares de Gramaje (Pizzas)
               </h3>
-              <span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-100 px-2 py-1 rounded">Actualizado: Hoy</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-100 px-2 py-1 rounded">Versión 2.4</span>
             </div>
 
             <div className="overflow-x-auto">
@@ -71,7 +53,6 @@ export default function StandardsView({ orders }: StandardsViewProps) {
                     <th className="pb-3 text-center">Mediana<br />(12")</th>
                     <th className="pb-3 text-center">Familiar<br />(16")</th>
                     <th className="pb-3 text-center">Tolerancia</th>
-                    <th className="pb-3 text-right pr-2">Cumplimiento</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -82,9 +63,6 @@ export default function StandardsView({ orders }: StandardsViewProps) {
                     <td className="py-4 text-center font-mono text-slate-600">180g</td>
                     <td className="py-4 text-center font-mono text-slate-600">250g</td>
                     <td className="py-4 text-center text-xs text-slate-400">± 10g</td>
-                    <td className="py-4 text-right pr-2">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase"><CheckCircle size={12} /> Si</span>
-                    </td>
                   </tr>
                   <tr className="group hover:bg-slate-50/50 transition-colors">
                     <td className="py-4 pl-2 font-bold text-slate-700 flex items-center gap-2">
@@ -93,9 +71,6 @@ export default function StandardsView({ orders }: StandardsViewProps) {
                     <td className="py-4 text-center font-mono text-slate-600">120g</td>
                     <td className="py-4 text-center font-mono text-slate-600">180g</td>
                     <td className="py-4 text-center text-xs text-slate-400">± 5g</td>
-                    <td className="py-4 text-right pr-2">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase"><CheckCircle size={12} /> Si</span>
-                    </td>
                   </tr>
                   <tr className="group hover:bg-slate-50/50 transition-colors">
                     <td className="py-4 pl-2 font-bold text-slate-700 flex items-center gap-2">
@@ -104,9 +79,6 @@ export default function StandardsView({ orders }: StandardsViewProps) {
                     <td className="py-4 text-center font-mono text-slate-600">30 un</td>
                     <td className="py-4 text-center font-mono text-slate-600">45 un</td>
                     <td className="py-4 text-center text-xs text-slate-400">± 2 un</td>
-                    <td className="py-4 text-right pr-2">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-black uppercase"><XCircle size={12} /> No</span>
-                    </td>
                   </tr>
                   <tr className="group hover:bg-slate-50/50 transition-colors">
                     <td className="py-4 pl-2 font-bold text-slate-700 flex items-center gap-2">
@@ -115,9 +87,6 @@ export default function StandardsView({ orders }: StandardsViewProps) {
                     <td className="py-4 text-center font-mono text-slate-600">100g</td>
                     <td className="py-4 text-center font-mono text-slate-600">150g</td>
                     <td className="py-4 text-center text-xs text-slate-400">± 10g</td>
-                    <td className="py-4 text-right pr-2">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase"><CheckCircle size={12} /> Si</span>
-                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -148,15 +117,15 @@ export default function StandardsView({ orders }: StandardsViewProps) {
                 </div>
               </div>
 
-              {/* Card 2 - Problematic */}
-              <div className="border border-red-100 rounded-2xl p-4 flex justify-between items-center bg-red-50/30">
+              {/* Card 2 - Fixed from Alert to Standard */}
+              <div className="border border-slate-100 rounded-2xl p-4 flex justify-between items-center bg-slate-50/50">
                 <div>
-                  <p className="text-[10px] font-black uppercase text-red-400 tracking-wider mb-1 flex items-center gap-1"><AlertTriangle size={10} /> Sauceo y Queso</p>
+                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1">Sauceo y Queso</p>
                   <p className="text-3xl font-black text-slate-800">30s</p>
-                  <p className="text-xs text-red-500 font-bold mt-1">Desviación detectada: +15s avg</p>
+                  <p className="text-xs text-slate-400 mt-1">Distribución uniforme</p>
                 </div>
-                <div className="text-red-500 bg-white p-2 rounded-full shadow-sm border border-red-100">
-                  <AlertCircle size={28} />
+                <div className="text-emerald-500 bg-white p-2 rounded-full shadow-sm border border-emerald-100">
+                  <CheckCircle size={28} />
                 </div>
               </div>
 
@@ -190,9 +159,8 @@ export default function StandardsView({ orders }: StandardsViewProps) {
           </div>
         </div>
 
-        {/* RIGHT COLUMN - VISUALS & ALERTS */}
+        {/* RIGHT COLUMN - VISUALS Reference */}
         <div className="space-y-8">
-
           {/* VISUAL REFERENCE */}
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
             <h3 className="font-black text-slate-800 text-lg mb-8">Referencia Visual de Borde</h3>
@@ -212,48 +180,25 @@ export default function StandardsView({ orders }: StandardsViewProps) {
               </div>
             </div>
 
-            <div className="bg-red-50 rounded-xl p-4 border border-red-100">
+            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
               <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle size={14} className="text-red-600" />
-                <h4 className="font-bold text-xs text-red-800 uppercase">Punto Crítico de Control</h4>
+                <CheckCircle size={14} className="text-slate-600" />
+                <h4 className="font-bold text-xs text-slate-800 uppercase">Estándar de Calidad</h4>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 El borde no debe exceder los 2cm ni ser menor a 1.5cm. El queso quemado en bordes se considera defecto crítico.
               </p>
             </div>
-          </div>
 
-          {/* ALERTS */}
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 h-fit">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-black text-slate-800 text-lg">Reportes de Mermas</h3>
-              <span className="bg-red-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{defects.length} Hoy</span>
+            <div className="mt-6 p-4 rounded-xl bg-blue-50 border border-blue-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Info size={14} className="text-blue-600" />
+                <h4 className="font-bold text-xs text-blue-800 uppercase">Nota del Propietario</h4>
+              </div>
+              <p className="text-xs text-blue-700 leading-relaxed">
+                Estos estándares son mandatorios para todas las sucursales. Cualquier desviación sistemática debe ser reportada inmediatamente.
+              </p>
             </div>
-
-            <div className="space-y-4">
-              {defects.length === 0 ? (
-                <div className="text-center py-8 text-slate-400">
-                  <CheckCircle className="mx-auto mb-2 opacity-50" />
-                  <p className="text-xs font-bold">Sin reportes hoy</p>
-                </div>
-              ) : (
-                defects.map((defect, idx) => (
-                  <div key={idx} className="bg-red-50 rounded-xl p-4 border-l-4 border-red-600 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <div className="flex justify-between items-start mb-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">
-                        {defect.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • #{defect.id.slice(-4)}
-                      </p>
-                    </div>
-                    <p className="font-bold text-slate-800 text-sm">{defect.reason}</p>
-                    <p className="text-xs text-slate-500 mt-1">{defect.itemName}</p>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <button className="w-full mt-6 py-3 text-center text-slate-400 text-xs font-bold hover:text-slate-600 transition-colors flex items-center justify-center gap-1">
-              Ver historial completo <ArrowRight size={14} />
-            </button>
           </div>
 
         </div>

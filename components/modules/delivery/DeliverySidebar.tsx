@@ -64,10 +64,10 @@ export default function DeliverySidebar({
       <header className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-white">
         <div className="flex items-center gap-3">
           <div className="size-10 bg-red-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-red-200 text-xs font-bold">
-            PD
+            PC
           </div>
           <div>
-            <h2 className="text-lg font-bold leading-tight tracking-tight text-slate-900">PizzaOps Delivery</h2>
+            <h2 className="text-lg font-bold leading-tight tracking-tight text-slate-900">Pizzería Claren'z</h2>
             <p className="text-slate-500 text-xs font-medium">Panel de Reparto</p>
           </div>
         </div>

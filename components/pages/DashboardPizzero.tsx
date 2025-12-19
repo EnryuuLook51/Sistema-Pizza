@@ -75,7 +75,7 @@ export default function DashboardPizzero() {
             <ChefHat size={24} />
           </div>
           <div>
-            <h1 className="text-lg font-black tracking-tight leading-none text-slate-800 uppercase">Pizzaiolo OS</h1>
+            <h1 className="text-lg font-black tracking-tight leading-none text-slate-800 uppercase">Pizzería Claren'z</h1>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Control de Cocina</p>
           </div>
         </div>
