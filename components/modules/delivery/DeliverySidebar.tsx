@@ -1,5 +1,7 @@
-import { Order } from "@/lib/types";
-import { AlertTriangle, Bell, CheckCircle, Clock, Map, MapPin, Navigation, Phone } from "lucide-react";
+import { Order, UserProfile } from "@/lib/types";
+import { User } from "firebase/auth";
+import { Bell, CheckCircle, Clock, Map, MapPin, Phone, User as UserIcon } from "lucide-react";
+import DeliveryTimer from "./DeliveryTimer";
 
 interface DeliverySidebarProps {
   orders: Order[];
@@ -8,6 +10,8 @@ interface DeliverySidebarProps {
   onLogout: () => void;
   onMarkDelivered: (id: string) => void;
   onPickUpOrder: (id: string) => void;
+  user: User | null;
+  profile: UserProfile | null;
 }
 
 export default function DeliverySidebar({
@@ -16,7 +20,9 @@ export default function DeliverySidebar({
   setActiveTab,
   onLogout,
   onMarkDelivered,
-  onPickUpOrder
+  onPickUpOrder,
+  user,
+  profile
 }: DeliverySidebarProps) {
 
   const inTransit = orders.filter(o => o.estado === 'en_delivery');
@@ -24,6 +30,32 @@ export default function DeliverySidebar({
   const completed = orders.filter(o => o.estado === 'entregado');
 
   const activeOrder = inTransit[0];
+
+  // Filter for orders completed TODAY
+  const todayStr = new Date().toDateString();
+  const completedToday = completed.filter(o =>
+    o.timestamps?.entregado && o.timestamps.entregado.toDateString() === todayStr
+  );
+
+  // Calculate Average Delivery Time (mins) for completed orders today
+  let totalTime = 0;
+  let countWithTime = 0;
+
+  completedToday.forEach(order => {
+    if (order.timestamps?.entregado && order.timestamps?.en_delivery) {
+      const start = order.timestamps.en_delivery.getTime();
+      const end = order.timestamps.entregado.getTime();
+      const diffMins = (end - start) / (1000 * 60);
+
+      // Filter out unreasonable times (e.g. negative or > 5 hours, though 5 hours is technically possible)
+      if (diffMins > 0) {
+        totalTime += diffMins;
+        countWithTime++;
+      }
+    }
+  });
+
+  const avgMinutes = countWithTime > 0 ? totalTime / countWithTime : 0;
 
   return (
     <aside className="w-full md:w-[420px] flex flex-col h-full bg-white border-r border-slate-200 z-20 shadow-2xl shrink-0 relative overflow-hidden">
@@ -36,15 +68,19 @@ export default function DeliverySidebar({
           </div>
           <div>
             <h2 className="text-lg font-bold leading-tight tracking-tight text-slate-900">PizzaOps Delivery</h2>
-            <p className="text-slate-500 text-xs font-medium">Ruta #802 • Norte</p>
+            <p className="text-slate-500 text-xs font-medium">Panel de Reparto</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <button className="flex items-center justify-center size-10 rounded-full bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors">
             <Bell size={20} />
           </button>
-          <button onClick={onLogout} className="size-10 rounded-full border border-slate-200 overflow-hidden hover:border-red-200 transition-colors">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" className="w-full h-full object-cover" />
+          <button onClick={onLogout} className="size-10 rounded-full border border-slate-200 overflow-hidden hover:border-red-200 transition-colors flex items-center justify-center bg-slate-50">
+            {user?.photoURL ? (
+              <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <UserIcon className="text-slate-400" />
+            )}
           </button>
         </div>
       </header>
@@ -52,43 +88,22 @@ export default function DeliverySidebar({
       {/* Content */}
       <div className="flex-1 overflow-y-auto flex flex-col bg-slate-50">
 
-        {/* Stats Row */}
+        {/* Stats Row (Real Data Only) */}
         <div className="p-6 pb-2 space-y-6 bg-white border-b border-slate-100">
-          <div className="flex gap-3">
-            <div className="flex grow basis-0 flex-col items-center gap-1">
-              <div className="flex w-full h-12 items-center justify-center rounded-xl bg-slate-50 border border-slate-200">
-                <p className="text-xl font-bold font-mono tracking-widest text-slate-800">04</p>
-              </div>
-              <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Hr</p>
-            </div>
-            <div className="flex grow basis-0 flex-col items-center gap-1">
-              <div className="flex w-full h-12 items-center justify-center rounded-xl bg-slate-50 border border-slate-200">
-                <p className="text-xl font-bold font-mono tracking-widest text-slate-800">12</p>
-              </div>
-              <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Min</p>
-            </div>
-            <div className="flex grow basis-0 flex-col items-center gap-1">
-              <div className="flex w-full h-12 items-center justify-center rounded-xl bg-red-50 border border-red-100">
-                <p className="text-red-600 text-xl font-bold font-mono tracking-widest">30</p>
-              </div>
-              <p className="text-red-600 text-[10px] font-bold uppercase tracking-wider">Sec</p>
-            </div>
-          </div>
-
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1 rounded-2xl p-4 bg-slate-50 border border-slate-100">
               <div className="flex items-center gap-2 mb-1">
                 <CheckCircle size={16} className="text-slate-400" />
-                <p className="text-slate-500 text-xs font-bold uppercase">Entregados</p>
+                <p className="text-slate-500 text-xs font-bold uppercase">Entregados Hoy</p>
               </div>
-              <p className="text-slate-800 text-2xl font-bold">{completed.length}</p>
+              <p className="text-slate-800 text-2xl font-bold">{completedToday.length}</p>
             </div>
             <div className="flex flex-col gap-1 rounded-2xl p-4 bg-slate-50 border border-slate-100">
               <div className="flex items-center gap-2 mb-1">
                 <Clock size={16} className="text-slate-400" />
-                <p className="text-slate-500 text-xs font-bold uppercase">Avg Tiempo</p>
+                <p className="text-slate-500 text-xs font-bold uppercase">Tiempo Prom.</p>
               </div>
-              <p className="text-slate-800 text-2xl font-bold">18m</p>
+              <p className="text-slate-800 text-2xl font-bold">{Math.round(avgMinutes)}m</p>
             </div>
           </div>
         </div>
@@ -133,16 +148,15 @@ export default function DeliverySidebar({
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <span className="px-2.5 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-bold uppercase tracking-wide shadow-sm animate-pulse">Destino Actual</span>
-                      <span className="text-slate-400 text-xs font-bold">#{activeOrder.id}</span>
+                      <span className="text-slate-400 text-xs font-bold">#{activeOrder.id.slice(-4)}</span>
                     </div>
                     <h3 className="text-slate-900 text-xl font-bold leading-tight">{activeOrder.direccion}</h3>
                     <p className="text-slate-500 text-sm mt-1 flex items-center gap-1 font-medium">
-                      <MapPin size={14} /> {activeOrder.cliente} • 1.2km
+                      <MapPin size={14} /> {activeOrder.cliente}
                     </p>
                   </div>
-                  <div className="size-12 rounded-2xl bg-red-50 text-red-600 border border-red-100 flex items-center justify-center shrink-0">
-                    <Navigation size={24} />
-                  </div>
+                  {/* TIMER COMPONENT */}
+                  <DeliveryTimer startTime={activeOrder.timestamps?.en_delivery} status={activeOrder.estado} />
                 </div>
 
                 <div className="flex gap-2 items-center mt-2 z-10">
@@ -152,12 +166,13 @@ export default function DeliverySidebar({
                   >
                     <CheckCircle size={18} /> Confirmar Entrega
                   </button>
-                  <button className="size-12 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-slate-50 hover:text-slate-600 transition-colors shadow-sm">
+                  <a
+                    href={activeOrder.telefono ? `tel:${activeOrder.telefono}` : undefined}
+                    className={`size-12 rounded-full border border-slate-200 flex items-center justify-center transition-colors shadow-sm ${activeOrder.telefono ? 'bg-white text-green-600 hover:bg-green-50 hover:border-green-200 cursor-pointer' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}
+                    title={activeOrder.telefono || "Sin teléfono"}
+                  >
                     <Phone size={20} />
-                  </button>
-                  <button className="size-12 rounded-full bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-colors shadow-sm">
-                    <AlertTriangle size={20} />
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
@@ -170,9 +185,10 @@ export default function DeliverySidebar({
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${activeTab === 'completed' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
-                      {order.estado.replace(/_/g, ' ')}
+                      {/* Humanize status */}
+                      {order.estado === 'en_delivery' ? 'En Ruta' : order.estado === 'listo_para_servir' ? 'Listo' : 'Entregado'}
                     </span>
-                    <span className="text-slate-400 text-xs font-medium">#{order.id}</span>
+                    <span className="text-slate-400 text-xs font-medium">#{order.id.slice(-4)}</span>
                   </div>
                   <h3 className="text-slate-900 text-lg font-bold leading-tight group-hover:text-red-600 transition-colors">{order.direccion || 'Retiro en Local'}</h3>
                   <p className="text-slate-500 text-sm mt-1">{order.cliente}</p>
@@ -190,7 +206,7 @@ export default function DeliverySidebar({
             </div>
           ))}
 
-          {((activeTab === 'transit' && inTransit.length === 0) || (activeTab === 'ready' && ready.length === 0)) && (
+          {((activeTab === 'transit' && inTransit.length === 0) || (activeTab === 'ready' && ready.length === 0) || (activeTab === 'completed' && completed.length === 0)) && (
             <div className="text-center py-12 opacity-50">
               <Map size={48} className="mx-auto mb-4 text-slate-300" />
               <p className="text-slate-400 font-medium">No hay pedidos en esta sección</p>
@@ -198,13 +214,6 @@ export default function DeliverySidebar({
           )}
 
         </div>
-      </div>
-
-      {/* Footer Actions */}
-      <div className="p-4 border-t border-slate-200 bg-white">
-        <button className="w-full h-12 rounded-full border border-slate-200 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50 hover:border-slate-300 transition-colors flex items-center justify-center gap-2 shadow-sm">
-          <Map size={18} className="text-red-600" /> Optimizar Ruta
-        </button>
       </div>
     </aside>
   );

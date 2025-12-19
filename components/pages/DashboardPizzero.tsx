@@ -6,8 +6,9 @@ import HistoryView from '@/components/modules/pizzero/HistoryView';
 import KDSBoard from '@/components/modules/pizzero/KDSBoard';
 import RecipesView from '@/components/modules/pizzero/RecipesView';
 import StandardsView from '@/components/modules/pizzero/StandardsView';
+import { useOrders } from '@/hooks/useOrders';
 import { auth } from "@/lib/firebase";
-import { Order, OrderStatus, Recipe } from '@/lib/types';
+import { OrderStatus, Recipe } from '@/lib/types';
 import { signOut } from "firebase/auth";
 import {
   BookOpen,
@@ -24,69 +25,14 @@ import { useEffect, useState } from 'react';
 import recipesData from '@/data/recipes.json';
 
 // --- MOCK DATA ---
-
 const MOCK_RECIPES: Recipe[] = recipesData as Recipe[];
-
-const INITIAL_ORDERS: Order[] = [
-  {
-    id: "4092",
-    cliente: "Mesa 4",
-    tipo: "mesa",
-    items: [{
-      id: "1", nombre: "Pizza Pepperoni Fam.", cantidad: 1, precio: 0, notas: "Sin orilla de queso",
-      estado: 'preparando', recipeId: '1', startTime: new Date(Date.now() - 1000 * 120) // 2 min prep
-    }],
-    total: 0,
-    estado: "preparando",
-    pagado: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 9),
-  },
-  {
-    id: "4095",
-    cliente: "Juan Pérez",
-    tipo: "llevar",
-    items: [{
-      id: "2", nombre: "Pizza Margarita", cantidad: 2, precio: 0,
-      estado: 'pendiente', recipeId: '2'
-    }],
-    total: 0,
-    estado: "pendiente",
-    pagado: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 1),
-  },
-  {
-    id: "4090",
-    cliente: "Delivery #88",
-    tipo: "delivery",
-    items: [{
-      id: "3", nombre: "Vegetariana", cantidad: 2, precio: 0,
-      estado: 'horno', recipeId: '5', startTime: new Date(Date.now() - 1000 * 150) // 2.5 min in oven
-    }],
-    total: 0,
-    estado: "horno",
-    pagado: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 15),
-  },
-  {
-    id: "4089",
-    cliente: "Mesa 1",
-    tipo: "mesa",
-    items: [{
-      id: "4", nombre: "4 Quesos", cantidad: 1, precio: 0,
-      estado: 'en_corte', recipeId: '4', startTime: new Date(Date.now() - 1000 * 30) // 30s in cut
-    }],
-    total: 0,
-    estado: "en_corte",
-    pagado: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 20),
-  }
-];
 
 // --- COMPONENTE PRINCIPAL ---
 
 export default function DashboardPizzero() {
   const { user, profile } = useAuth();
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
+  const { orders, updateOrderItemStatus } = useOrders(); // Integración Firestore
+
   const [activeTab, setActiveTab] = useState<'tablero' | 'recetas' | 'estandares' | 'historial'>('tablero');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showDefectModal, setShowDefectModal] = useState<{ orderId: string, itemId: string } | null>(null); // Track specific item
@@ -98,32 +44,25 @@ export default function DashboardPizzero() {
     return () => clearInterval(timer);
   }, []);
 
-  const moveItem = (orderId: string, itemId: string, newState: OrderStatus) => {
-    setOrders(prev => prev.map(o => {
-      if (o.id === orderId) {
-        const now = new Date();
-        const updatedItems = o.items.map(item => {
-          if (item.id === itemId) {
-            return {
-              ...item,
-              estado: newState,
-              startTime: now,
-              timestamps: { ...item.timestamps, [newState]: now }
-            };
-          }
-          return item;
-        });
-
-        // Optional: Update parent Order status based on items (e.g. if all done, order is done)
-        return { ...o, items: updatedItems };
-      }
-      return o;
-    }));
+  // Mover estado de un ITEM específico (Persiste en Firebase)
+  const moveItem = async (orderId: string, itemId: string, newState: OrderStatus) => {
+    await updateOrderItemStatus(orderId, itemId, newState);
   };
 
-  const handleDefect = (reason: string) => {
+  const handleDefect = async (reason: string) => {
     if (showDefectModal) {
-      moveItem(showDefectModal.orderId, showDefectModal.itemId, 'cancelado');
+      // Find current item notes to append reason
+      const order = orders.find(o => o.id === showDefectModal.orderId);
+      const item = order?.items.find(i => i.id === showDefectModal.itemId);
+      const currentNotes = item?.notas ? `${item.notas} | ` : '';
+
+      await updateOrderItemStatus(
+        showDefectModal.orderId,
+        showDefectModal.itemId,
+        'cancelado',
+        { notas: `${currentNotes}DEFECTO: ${reason}` }
+      );
+
       setShowDefectModal(null);
     }
   };
@@ -143,7 +82,7 @@ export default function DashboardPizzero() {
           </div>
         </div>
 
-        <nav className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner">
+        <nav className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner hidden md:flex">
           {[
             { id: 'tablero', label: 'Tablero KDS', icon: LayoutDashboard },
             { id: 'recetas', label: 'Manual Recetas', icon: BookOpen },
@@ -159,7 +98,7 @@ export default function DashboardPizzero() {
                 }`}
             >
               <tab.icon size={16} className={activeTab === tab.id ? 'text-red-500' : ''} />
-              {tab.label}
+              <span className="hidden md:inline">{tab.label}</span>
             </button>
           ))}
         </nav>
@@ -226,7 +165,7 @@ export default function DashboardPizzero() {
         )}
 
         {activeTab === 'estandares' && (
-          <StandardsView />
+          <StandardsView orders={orders} />
         )}
 
         {activeTab === 'historial' && (

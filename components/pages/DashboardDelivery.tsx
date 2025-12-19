@@ -1,9 +1,9 @@
 "use client";
 
+import { useAuth } from "@/components/auth/ProveedorAutenticacion";
 import DeliverySidebar from "@/components/modules/delivery/DeliverySidebar";
-import { MOCK_DELIVERY_ORDERS } from "@/data/mock-delivery";
+import { useOrders } from "@/hooks/useOrders";
 import { auth } from "@/lib/firebase";
-import { Order } from "@/lib/types";
 import { signOut } from "firebase/auth";
 import { Menu, X } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -15,27 +15,36 @@ const DeliveryMap = dynamic(() => import('@/components/modules/delivery/Delivery
 });
 
 export default function DashboardDelivery() {
-  const [orders, setOrders] = useState<Order[]>(MOCK_DELIVERY_ORDERS);
+  const { user, profile } = useAuth();
+  const { orders, updateOrderStatus, markAsPaid } = useOrders(); // Integración Firestore
+
   const [activeTab, setActiveTab] = useState<'transit' | 'ready' | 'completed'>('transit');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const inTransit = orders.filter(o => o.estado === 'en_delivery');
-  const ready = orders.filter(o => o.estado === 'listo_para_servir');
-  const completed = orders.filter(o => o.estado === 'entregado');
+  // Filtrar solo ordenes relevantes para delivery (o que son para delivery)
+  // Nota: Podríamos filtrar por tipo === 'delivery', pero a veces 'llevar' tmb se muestra aquí. Asumiremos 'delivery'.
+  const deliveryOrders = orders.filter(o => o.tipo === 'delivery');
 
-  const activeOrder = inTransit[0]; // For demo, assume first 'en_delivery' is the active one
+  const inTransit = deliveryOrders.filter(o => o.estado === 'en_delivery');
+  const ready = deliveryOrders.filter(o => o.estado === 'listo_para_servir');
+  const completed = deliveryOrders.filter(o => o.estado === 'entregado');
+
+  const activeOrder = inTransit[0];
 
   const handleLogout = async () => {
     await signOut(auth);
   };
 
-  const markAsDelivered = (id: string) => {
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, estado: "entregado", pagado: true } : o));
-    alert("¡Entrega Confirmada!");
+  const markAsDelivered = async (id: string) => {
+    // Marcar como entregado y pagado
+    await updateOrderStatus(id, 'entregado');
+    await markAsPaid(id);
+    // alert("¡Entrega Confirmada!"); // Mejor usar toast o UI feedback sutil
   };
 
-  const pickUpOrder = (id: string) => {
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, estado: "en_delivery" } : o));
+  const pickUpOrder = async (id: string) => {
+    // Pasar de 'listo_para_servir' a 'en_delivery'
+    await updateOrderStatus(id, 'en_delivery');
   };
 
   return (
@@ -48,12 +57,14 @@ export default function DashboardDelivery() {
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <DeliverySidebar
-          orders={orders}
+          orders={deliveryOrders}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           onLogout={handleLogout}
           onMarkDelivered={markAsDelivered}
           onPickUpOrder={pickUpOrder}
+          user={user}
+          profile={profile}
         />
 
         {/* Mobile Close Handle (Optional overlay click could go here too) */}

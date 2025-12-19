@@ -1,8 +1,9 @@
 "use client";
 
 import { useAuth } from "@/components/auth/ProveedorAutenticacion";
+import { useOrders } from "@/hooks/useOrders"; // Hook personalizado
 import { auth } from "@/lib/firebase";
-import { Order, OrderStatus } from "@/lib/types";
+import { Order } from "@/lib/types";
 import { signOut } from "firebase/auth";
 import {
   ChevronDown,
@@ -13,67 +14,16 @@ import {
   User as UserIcon
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import NewOrderPanel from "../modules/atencion/NewOrderPanel";
+import NewOrderPanel from "../modules/atencion/NewOrderPanelV2";
+import PaymentModal from "../modules/atencion/PaymentModal";
 import POSView from "../modules/atencion/POSView";
 import SalonView from "../modules/atencion/SalonView";
 
-import PaymentModal from "../modules/atencion/PaymentModal";
-
-// MOCK DATA
-const MOCK_ORDERS: Order[] = [
-  // ... (mock data remains same, simplified here for brevity, assume full array)
-  {
-    id: "101",
-    cliente: "Mesa 4",
-    tipo: "mesa",
-    mesa: "4",
-    items: [
-      { id: "p1", nombre: "Pizza Pepperoni", cantidad: 2, precio: 24, estado: 'listo_para_servir' },
-      { id: "b1", nombre: "Coca-Cola", cantidad: 2, precio: 4, estado: 'listo_para_servir' }
-    ],
-    total: 28,
-    estado: "listo_para_servir",
-    pagado: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 12), // 12 min
-  },
-  {
-    id: "102",
-    cliente: "Juan Pérez",
-    tipo: "llevar",
-    items: [{ id: "p2", nombre: "Pizza Hawaiana", cantidad: 1, precio: 12, estado: 'preparando' }],
-    total: 12,
-    estado: "preparando",
-    pagado: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 5),
-  },
-  {
-    id: "103",
-    cliente: "Ana García",
-    tipo: "delivery",
-    direccion: "Av. Siempre Viva 123",
-    items: [{ id: "p3", nombre: "Pizza Suprema", cantidad: 1, precio: 15, estado: 'en_delivery' }],
-    total: 15,
-    estado: "en_delivery",
-    pagado: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 25),
-  },
-  {
-    id: "104",
-    cliente: "Mesa 8",
-    tipo: "mesa",
-    mesa: "8",
-    items: [{ id: "p4", nombre: "Pasta Carbonara", cantidad: 3, precio: 36, estado: "preparando" }],
-    total: 36,
-    estado: "preparando",
-    pagado: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 8),
-  }
-];
-
 export default function DashboardAtencion() {
   const { user, profile } = useAuth();
+  const { orders, createOrder, updateOrderStatus, markAsPaid } = useOrders(); // Integración con Firestore
+
   const [viewMode, setViewMode] = useState<'POS' | 'SALON'>('POS');
-  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
   const [currentTime, setCurrentTime] = useState("");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showViewMenu, setShowViewMenu] = useState(false);
@@ -93,26 +43,23 @@ export default function DashboardAtencion() {
     await signOut(auth);
   };
 
-  const updateStatus = (id: string, newStatus: OrderStatus) => {
-    setOrders(orders.map(o => o.id === id ? { ...o, estado: newStatus } : o));
-  };
-
   // Abre el modal de pago
   const handleRequestPayment = (id: string) => {
     const order = orders.find(o => o.id === id);
     if (order) setOrderToPay(order);
   };
 
-  // Callback exitoso del modal
-  const handlePaymentConfirmed = (method: 'Efectivo' | 'Tarjeta') => {
+  // Callback exitoso del modal -> Actualiza en Firebase
+  const handlePaymentConfirmed = async (method: 'Efectivo' | 'Tarjeta') => {
     if (orderToPay) {
-      setOrders(orders.map(o => o.id === orderToPay.id ? { ...o, pagado: true } : o));
+      await markAsPaid(orderToPay.id);
       setOrderToPay(null);
     }
   };
 
-  const handleCreateOrder = (newOrder: Order) => {
-    setOrders([newOrder, ...orders]);
+  const handleCreateOrder = async (newOrder: Order) => {
+    // NewOrderPanel pasa un objeto con ID temporal, pero createOrder lo ignora y crea uno nuevo en Firebase
+    await createOrder(newOrder);
   };
 
   const toggleView = (mode: 'POS' | 'SALON') => {
@@ -246,9 +193,9 @@ export default function DashboardAtencion() {
         <main className="flex-1 p-6 overflow-y-auto bg-slate-50/50">
           <div className="max-w-[1600px] mx-auto h-full">
             {viewMode === 'POS' ? (
-              <POSView orders={orders} onUpdateStatus={updateStatus} onRequestPayment={handleRequestPayment} />
+              <POSView orders={orders} onUpdateStatus={updateOrderStatus} onRequestPayment={handleRequestPayment} />
             ) : (
-              <SalonView orders={orders} onUpdateStatus={updateStatus} />
+              <SalonView orders={orders} onUpdateStatus={updateOrderStatus} />
             )}
           </div>
         </main>

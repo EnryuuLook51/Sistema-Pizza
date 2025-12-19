@@ -23,6 +23,7 @@ export interface OrderItem {
   cantidad: number;
   precio: number;
   notas?: string;
+  removedIngredients?: string[]; // Lista de ingredientes eliminados de la receta original
 
   // New: Item-level tracking
   recipeId?: string; // Para vincular con la receta y sus tiempos
@@ -39,8 +40,13 @@ export interface Order {
   tipo: OrderType;
   mesa?: string;
   direccion?: string;
+  telefono?: string;
   items: OrderItem[];
   total: number;
+  location?: {
+    lat: number;
+    lng: number;
+  };
   estado: OrderStatus; // Estado general (ej: 'preparando' si al menos uno está en proceso)
   pagado: boolean;
   createdAt: Date;
@@ -54,18 +60,30 @@ export interface Order {
 // RECETAS
 export interface RecipeIngredient {
   name: string;
-  amount: string;
+  quantity: {
+    mediana: string;
+    familiar: string;
+  };
+}
+
+export interface RecipeStep {
+  title: string;
+  description: string;
 }
 
 export interface Recipe {
   id: string;
   name: string;
   image?: string;
+  category: 'pizzas' | 'masas' | 'salsas'; // Added category
+  tags?: string[]; // Added tags e.g. "Top Ventas"
+
   ingredients: RecipeIngredient[];
-  steps: string[];
+  steps: RecipeStep[]; // Structured steps
 
   // Tiempos limite en segundos
   prepTime?: number; // Mesa de trabajo
   cookTime?: number; // Horno
   cutTime?: number;  // Expedición
+  temp?: number;     // Temperatura del horno
 }

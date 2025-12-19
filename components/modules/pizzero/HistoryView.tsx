@@ -27,26 +27,36 @@ export default function HistoryView({ orders }: HistoryViewProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50 text-sm font-medium text-slate-600">
-            {/* Incluir mock de historial + ordenes terminadas + canceladas */}
-            {[...doneOrders, { id: 'H1', cliente: ' Historial Demo', items: [{ nombre: 'Pizza', cantidad: 1 }], createdAt: new Date(), estado: 'entregado' }].map((order: any, i) => (
-              <tr key={i} className="hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4 font-mono font-bold text-slate-400">#{order.id}</td>
-                <td className="px-6 py-4 font-bold text-slate-800">{order.cliente}</td>
-                <td className="px-6 py-4">{order.items.length} items ({order.items[0].nombre}...)</td>
-                <td className="px-6 py-4 font-mono text-slate-400">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                <td className="px-6 py-4">
-                  {order.estado === 'cancelado' ? (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-100">
-                      <AlertTriangle size={12} /> Fallido / Mermado
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100">
-                      <CheckCircle size={12} /> Completado
-                    </span>
-                  )}
+            {doneOrders.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-6 py-12 text-center">
+                  <div className="flex flex-col items-center justify-center text-slate-300">
+                    <History size={32} className="mb-2 opacity-50" />
+                    <p className="font-bold">No hay historial en este turno</p>
+                  </div>
                 </td>
               </tr>
-            ))}
+            ) : (
+              doneOrders.map((order: any, i) => (
+                <tr key={i} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-6 py-4 font-mono font-bold text-slate-400">#{order.id.slice(-4)}</td>
+                  <td className="px-6 py-4 font-bold text-slate-800">{order.cliente}</td>
+                  <td className="px-6 py-4">{order.items.length} items ({order.items[0]?.nombre} {order.items.length > 1 && '...'})</td>
+                  <td className="px-6 py-4 font-mono text-slate-400">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                  <td className="px-6 py-4">
+                    {order.estado === 'cancelado' ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-100">
+                        <AlertTriangle size={12} /> Fallido / Mermado
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100">
+                        <CheckCircle size={12} /> Completado
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

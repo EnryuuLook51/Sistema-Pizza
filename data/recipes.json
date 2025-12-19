@@ -3,177 +3,471 @@
     "id": "1",
     "name": "Pizza Pepperoni Clásica",
     "image": "https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=1000&auto=format&fit=crop",
+    "category": "pizzas",
+    "tags": [
+      "Clásica",
+      "Top Ventas"
+    ],
     "prepTime": 180,
     "cookTime": 300,
     "cutTime": 60,
+    "temp": 280,
     "ingredients": [
       {
+        "name": "Masa",
+        "quantity": {
+          "mediana": "250g",
+          "familiar": "400g"
+        }
+      },
+      {
         "name": "Salsa de Tomate",
-        "amount": "80g (Espiral)"
+        "quantity": {
+          "mediana": "80g (Espiral)",
+          "familiar": "120g (Espiral)"
+        }
       },
       {
         "name": "Queso Mozzarella",
-        "amount": "150g"
+        "quantity": {
+          "mediana": "150g",
+          "familiar": "250g"
+        }
       },
       {
         "name": "Pepperoni",
-        "amount": "30 rodajas (Patrón 5-4-3)"
+        "quantity": {
+          "mediana": "30 u (20-10)",
+          "familiar": "35 u (20-10-5)"
+        }
+      },
+      {
+        "name": "Aceite de Ajo (Borde)",
+        "quantity": {
+          "mediana": "10ml",
+          "familiar": "15ml"
+        }
       }
     ],
     "steps": [
-      "Extender masa a 30cm dejando borde de 2cm.",
-      "Aplicar salsa desde el centro en espiral.",
-      "Distribuir queso uniformemente sin cubrir el borde.",
-      "Colocar pepperoni de fuera hacia adentro."
+      {
+        "title": "Estirado de Masa",
+        "description": "Formar disco dejando borde de 2cm. Usar harina de maíz para evitar que se pegue."
+      },
+      {
+        "title": "Salseado",
+        "description": "Esparcir salsa desde el centro en espiral. No manchar el borde."
+      },
+      {
+        "title": "Queso y Toppings",
+        "description": "Cubrir salsa con mozzarella. Colocar las rodajas de pepperoni siguiendo el patrón circular."
+      },
+      {
+        "title": "Horneado",
+        "description": "Ingresar al horno a 280°C por 5 minutos hasta que el queso burbujee y el borde esté dorado."
+      }
     ]
   },
   {
     "id": "2",
     "name": "Pizza Hawaiana",
     "image": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Hawaiian_pizza_1.jpg",
+    "category": "pizzas",
+    "tags": [
+      "Niños",
+      "Dulce"
+    ],
     "prepTime": 200,
     "cookTime": 300,
     "cutTime": 60,
+    "temp": 280,
     "ingredients": [
       {
+        "name": "Masa",
+        "quantity": {
+          "mediana": "250g",
+          "familiar": "400g"
+        }
+      },
+      {
         "name": "Salsa de Tomate",
-        "amount": "80g"
+        "quantity": {
+          "mediana": "80g",
+          "familiar": "120g"
+        }
       },
       {
         "name": "Queso Mozzarella",
-        "amount": "140g"
+        "quantity": {
+          "mediana": "140g",
+          "familiar": "220g"
+        }
       },
       {
         "name": "Jamón",
-        "amount": "60g (Cuadros)"
+        "quantity": {
+          "mediana": "60g",
+          "familiar": "90g"
+        }
       },
       {
         "name": "Piña",
-        "amount": "50g (Drenada)"
+        "quantity": {
+          "mediana": "50g (Drenada)",
+          "familiar": "80g (Drenada)"
+        }
       }
     ],
     "steps": [
-      "Base estándar de salsa y queso.",
-      "Distribuir jamón equitativamente.",
-      "Colocar piña asegurando que no tenga exceso de líquido."
+      {
+        "title": "Base",
+        "description": "Base estándar de salsa y queso."
+      },
+      {
+        "title": "Toppings",
+        "description": "Distribuir jamón equitativamente. Colocar piña asegurando que no tenga exceso de líquido."
+      },
+      {
+        "title": "Horneado",
+        "description": "Hornear monitoreando que la piña se caramelice ligeramente."
+      }
     ]
   },
   {
     "id": "3",
     "name": "Pizza Suprema",
     "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1000",
+    "category": "pizzas",
+    "tags": [
+      "Full Carne",
+      "Premium"
+    ],
     "prepTime": 240,
     "cookTime": 330,
     "cutTime": 60,
+    "temp": 275,
     "ingredients": [
       {
+        "name": "Masa",
+        "quantity": {
+          "mediana": "250g",
+          "familiar": "400g"
+        }
+      },
+      {
         "name": "Salsa",
-        "amount": "80g"
+        "quantity": {
+          "mediana": "80g",
+          "familiar": "120g"
+        }
       },
       {
         "name": "Queso",
-        "amount": "150g"
+        "quantity": {
+          "mediana": "150g",
+          "familiar": "240g"
+        }
       },
       {
         "name": "Pepperoni",
-        "amount": "10u"
+        "quantity": {
+          "mediana": "10u",
+          "familiar": "15u"
+        }
       },
       {
         "name": "Pimiento",
-        "amount": "30g"
+        "quantity": {
+          "mediana": "30g",
+          "familiar": "50g"
+        }
       },
       {
         "name": "Cebolla",
-        "amount": "20g"
-      },
-      {
-        "name": "Champiñones",
-        "amount": "30g"
+        "quantity": {
+          "mediana": "20g",
+          "familiar": "35g"
+        }
       },
       {
         "name": "Carne",
-        "amount": "40g"
+        "quantity": {
+          "mediana": "40g",
+          "familiar": "70g"
+        }
       }
     ],
     "steps": [
-      "Extender base y salsa.",
-      "Agregar queso base.",
-      "Distribuir ingredientes en orden: carne, vegetales, pepperoni.",
-      "Toque final de queso."
+      {
+        "title": "Preparación",
+        "description": "Extender base y salsa. Agregar queso base."
+      },
+      {
+        "title": "Capas",
+        "description": "Distribuir ingredientes en orden: carne, vegetales, pepperoni."
+      },
+      {
+        "title": "Final",
+        "description": "Toque final de queso extra sobre los vegetales."
+      }
     ]
   },
   {
     "id": "4",
     "name": "Pizza 4 Quesos",
     "image": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=1000",
+    "category": "pizzas",
+    "tags": [
+      "Gourmet",
+      "Vegetariana"
+    ],
     "prepTime": 150,
     "cookTime": 280,
     "cutTime": 45,
+    "temp": 270,
     "ingredients": [
       {
+        "name": "Masa",
+        "quantity": {
+          "mediana": "250g",
+          "familiar": "400g"
+        }
+      },
+      {
         "name": "Salsa Blanca",
-        "amount": "60g"
+        "quantity": {
+          "mediana": "60g",
+          "familiar": "100g"
+        }
       },
       {
         "name": "Mozzarella",
-        "amount": "80g"
+        "quantity": {
+          "mediana": "80g",
+          "familiar": "120g"
+        }
       },
       {
         "name": "Gorgonzola",
-        "amount": "40g"
-      },
-      {
-        "name": "Parmesano",
-        "amount": "30g (Polvo)"
+        "quantity": {
+          "mediana": "40g",
+          "familiar": "60g"
+        }
       },
       {
         "name": "Provolone",
-        "amount": "40g"
+        "quantity": {
+          "mediana": "40g",
+          "familiar": "60g"
+        }
+      },
+      {
+        "name": "Parmesano",
+        "quantity": {
+          "mediana": "30g",
+          "familiar": "40g"
+        }
       }
     ],
     "steps": [
-      "Base de salsa blanca.",
-      "Mezclar quesos y distribuir uniformemente.",
-      "Espolvorear orégano al final."
+      {
+        "title": "Base Blanca",
+        "description": "Untar base de salsa blanca o bechamel."
+      },
+      {
+        "title": "Mezcla",
+        "description": "Distribuir mozzarella, gorgonzola y provolone uniformemente."
+      },
+      {
+        "title": "Acabado",
+        "description": "Espolvorear parmesano al salir del horno."
+      }
     ]
   },
   {
     "id": "5",
     "name": "Pizza Vegetariana",
     "image": "https://images.unsplash.com/photo-1571407921588-403ddc45eb6d?q=80&w=1000",
+    "category": "pizzas",
+    "tags": [
+      "Saludable",
+      "Vegetariana"
+    ],
     "prepTime": 220,
     "cookTime": 330,
     "cutTime": 60,
+    "temp": 275,
     "ingredients": [
       {
+        "name": "Masa",
+        "quantity": {
+          "mediana": "250g",
+          "familiar": "400g"
+        }
+      },
+      {
         "name": "Salsa",
-        "amount": "80g"
+        "quantity": {
+          "mediana": "80g",
+          "familiar": "120g"
+        }
       },
       {
         "name": "Queso",
-        "amount": "140g"
+        "quantity": {
+          "mediana": "140g",
+          "familiar": "220g"
+        }
       },
       {
         "name": "Pimiento Rojo",
-        "amount": "40g"
+        "quantity": {
+          "mediana": "40g",
+          "familiar": "60g"
+        }
       },
       {
         "name": "Aceitunas",
-        "amount": "30g"
+        "quantity": {
+          "mediana": "30g",
+          "familiar": "45g"
+        }
       },
       {
         "name": "Choclo",
-        "amount": "30g"
+        "quantity": {
+          "mediana": "30g",
+          "familiar": "50g"
+        }
       },
       {
         "name": "Tomate Cherry",
-        "amount": "50g"
+        "quantity": {
+          "mediana": "50g",
+          "familiar": "80g"
+        }
       }
     ],
     "steps": [
-      "Base estándar.",
-      "Distribuir vegetales procurando colores vivos.",
-      "Aceitunas al final para decorar."
+      {
+        "title": "Armado",
+        "description": "Base estándar de salsa y queso."
+      },
+      {
+        "title": "Vegetales",
+        "description": "Distribuir vegetales procurando colores vivos y separación."
+      },
+      {
+        "title": "Decoración",
+        "description": "Aceitunas y tomate cherry van al final."
+      }
+    ]
+  },
+  {
+    "id": "6",
+    "name": "Masa Familiar Clásica",
+    "category": "masas",
+    "tags": [
+      "Base",
+      "Producción"
+    ],
+    "prepTime": 900,
+    "cookTime": 0,
+    "cutTime": 0,
+    "temp": 0,
+    "ingredients": [
+      {
+        "name": "Harina 000",
+        "quantity": {
+          "mediana": "10kg",
+          "familiar": "10kg"
+        }
+      },
+      {
+        "name": "Agua",
+        "quantity": {
+          "mediana": "6L",
+          "familiar": "6L"
+        }
+      },
+      {
+        "name": "Levadura",
+        "quantity": {
+          "mediana": "50g",
+          "familiar": "50g"
+        }
+      },
+      {
+        "name": "Sal",
+        "quantity": {
+          "mediana": "200g",
+          "familiar": "200g"
+        }
+      }
+    ],
+    "steps": [
+      {
+        "title": "Mezclado",
+        "description": "Mezclar agua y levadura. Incorporar harina y sal."
+      },
+      {
+        "title": "Amasado",
+        "description": "Amasar por 15 minutos hasta lograr textura lisa."
+      },
+      {
+        "title": "Fermentación",
+        "description": "Dejar reposar 24h en frío."
+      }
+    ]
+  },
+  {
+    "id": "7",
+    "name": "Salsa Pomodoro Base",
+    "category": "salsas",
+    "tags": [
+      "Base",
+      "Cocina"
+    ],
+    "prepTime": 600,
+    "cookTime": 1800,
+    "cutTime": 0,
+    "temp": 100,
+    "ingredients": [
+      {
+        "name": "Tomates Pelados",
+        "quantity": {
+          "mediana": "5kg",
+          "familiar": "5kg"
+        }
+      },
+      {
+        "name": "Albahaca Fresca",
+        "quantity": {
+          "mediana": "100g",
+          "familiar": "100g"
+        }
+      },
+      {
+        "name": "Ajo",
+        "quantity": {
+          "mediana": "50g",
+          "familiar": "50g"
+        }
+      }
+    ],
+    "steps": [
+      {
+        "title": "Sofrito",
+        "description": "Sofreír ajos levemente."
+      },
+      {
+        "title": "Cocción",
+        "description": "Agregar tomates triturados y cocinar por 30 mins."
+      },
+      {
+        "title": "Aromas",
+        "description": "Agregar albahaca al final y procesar ligeramente."
+      }
     ]
   }
 ]
