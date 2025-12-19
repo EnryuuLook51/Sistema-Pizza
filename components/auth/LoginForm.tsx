@@ -182,8 +182,8 @@ export default function LoginForm() {
           {/* Pie de Página */}
           <div className="pt-8 border-t border-white/10">
             <p className="text-center text-xs text-gray-500">
-              © {new Date().getFullYear()} Discipulo de Corales Inc. Todos los derechos reservados.<br />
-              Versión 6.6.6
+              © {new Date().getFullYear()} Pizzeria Claren'z Inc. Todos los derechos reservados.<br />
+              Versión 0.9.2
             </p>
           </div>
         </div>
