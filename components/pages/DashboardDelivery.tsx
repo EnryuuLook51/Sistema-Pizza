@@ -1,37 +1,18 @@
-"use client";
-
+import { auth } from "@/lib/firebase";
 import { Order } from "@/lib/types";
-import { CheckCircle, Clock, MapPin, Truck } from "lucide-react";
+import { signOut } from "firebase/auth";
+import { CheckCircle, Clock, LogOut, MapPin, Truck } from "lucide-react";
 import { useState } from "react";
 
 // MOCK DATA (Simulando pedidos asignados a este delivery)
-const MOCK_DELIVERY_ORDERS: Order[] = [
-  {
-    id: "103",
-    cliente: "Ana García",
-    tipo: "delivery",
-    direccion: "Av. Siempre Viva 123, Springfield",
-    items: [{ id: "p3", nombre: "Pizza Suprema", cantidad: 1, precio: 15 }],
-    total: 15,
-    estado: "en_delivery",
-    pagado: false,
-    createdAt: new Date(),
-  },
-  {
-    id: "105",
-    cliente: "Carlos López",
-    tipo: "delivery",
-    direccion: "Calle Falsa 123",
-    items: [{ id: "p4", nombre: "Pizza Hawaiana", cantidad: 2, precio: 30 }],
-    total: 30,
-    estado: "entregado", // Historial
-    pagado: true,
-    createdAt: new Date(Date.now() - 3600000), // Hace 1 hora
-  }
-];
+// ... (omitted)
 
 export default function DashboardDelivery() {
   const [orders, setOrders] = useState<Order[]>(MOCK_DELIVERY_ORDERS);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
 
   const markAsDelivered = (id: string) => {
     // En una app real, esto enviaría la actualización a Firebase
@@ -41,14 +22,22 @@ export default function DashboardDelivery() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6 pb-24">
-      <header className="mb-6 flex items-center gap-3">
-        <div className="p-3 bg-red-600 rounded-full">
-          <Truck size={24} className="text-white" />
+      <header className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-red-600 rounded-full">
+            <Truck size={24} className="text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Modo Ruta</h1>
+            <p className="text-gray-400 text-sm">Tus entregas asignadas</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold">Modo Ruta</h1>
-          <p className="text-gray-400 text-sm">Tus entregas asignadas</p>
-        </div>
+        <button
+          onClick={handleLogout}
+          className="p-2 bg-gray-800 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
+        >
+          <LogOut size={20} />
+        </button>
       </header>
 
       {/* LISTA DE PEDIDOS PENDIENTES */}

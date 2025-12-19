@@ -1,36 +1,11 @@
-"use client";
-
+import { auth } from "@/lib/firebase";
 import { Order, OrderStatus } from "@/lib/types";
-import { AlertCircle, CheckCircle, ChefHat, Clock, Flame } from "lucide-react";
+import { signOut } from "firebase/auth";
+import { AlertCircle, CheckCircle, ChefHat, Clock, Flame, LogOut } from "lucide-react";
 import { useState } from "react";
 
 // MOCK DATA PARA COCINA
-const MOCK_KITCHEN_ORDERS: Order[] = [
-  {
-    id: "102",
-    cliente: "Juan Pérez",
-    tipo: "llevar",
-    items: [{ id: "p2", nombre: "Pizza Hawaiana", cantidad: 2, precio: 24 }],
-    total: 24,
-    estado: "preparando",
-    pagado: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 15), // Hace 15 min
-  },
-  {
-    id: "104",
-    cliente: "Mesa 2",
-    tipo: "mesa",
-    mesa: "2",
-    items: [
-      { id: "p4", nombre: "Pizza 4 Quesos", cantidad: 1, precio: 18 },
-      { id: "p5", nombre: "Pan de Ajo", cantidad: 1, precio: 5 }
-    ],
-    total: 23,
-    estado: "pendiente",
-    pagado: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 5), // Hace 5 min
-  }
-];
+// ... (omitted)
 
 export default function DashboardPizzero() {
   const [orders, setOrders] = useState<Order[]>(MOCK_KITCHEN_ORDERS);
@@ -56,13 +31,22 @@ export default function DashboardPizzero() {
             <p className="text-xs text-gray-400">Pantalla de Producción</p>
           </div>
         </div>
-        <div className="flex gap-4 text-sm font-mono">
-          <div className="bg-slate-900 px-3 py-1 rounded border border-slate-700">
-            PENDIENTES: <span className="text-red-400 font-bold">{orders.filter(o => o.estado === 'pendiente').length}</span>
+        <div className="flex items-center gap-6">
+          <div className="flex gap-4 text-sm font-mono">
+            <div className="bg-slate-900 px-3 py-1 rounded border border-slate-700">
+              PENDIENTES: <span className="text-red-400 font-bold">{orders.filter(o => o.estado === 'pendiente').length}</span>
+            </div>
+            <div className="bg-slate-900 px-3 py-1 rounded border border-slate-700">
+              EN HORNO: <span className="text-orange-400 font-bold">{orders.filter(o => o.estado === 'preparando').length}</span>
+            </div>
           </div>
-          <div className="bg-slate-900 px-3 py-1 rounded border border-slate-700">
-            EN HORNO: <span className="text-orange-400 font-bold">{orders.filter(o => o.estado === 'preparando').length}</span>
-          </div>
+          <button
+            onClick={() => signOut(auth)}
+            className="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
+            title="Cerrar Sesión"
+          >
+            <LogOut size={20} />
+          </button>
         </div>
       </header>
 
