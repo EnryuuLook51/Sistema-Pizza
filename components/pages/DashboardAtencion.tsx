@@ -28,8 +28,8 @@ const MOCK_ORDERS: Order[] = [
     tipo: "mesa",
     mesa: "4",
     items: [
-      { id: "p1", nombre: "Pizza Pepperoni", cantidad: 2, precio: 24 },
-      { id: "b1", nombre: "Coca-Cola", cantidad: 2, precio: 4 }
+      { id: "p1", nombre: "Pizza Pepperoni", cantidad: 2, precio: 24, estado: 'listo_para_servir' },
+      { id: "b1", nombre: "Coca-Cola", cantidad: 2, precio: 4, estado: 'listo_para_servir' }
     ],
     total: 28,
     estado: "listo_para_servir",
@@ -40,7 +40,7 @@ const MOCK_ORDERS: Order[] = [
     id: "102",
     cliente: "Juan Pérez",
     tipo: "llevar",
-    items: [{ id: "p2", nombre: "Pizza Hawaiana", cantidad: 1, precio: 12 }],
+    items: [{ id: "p2", nombre: "Pizza Hawaiana", cantidad: 1, precio: 12, estado: 'preparando' }],
     total: 12,
     estado: "preparando",
     pagado: true,
@@ -51,7 +51,7 @@ const MOCK_ORDERS: Order[] = [
     cliente: "Ana García",
     tipo: "delivery",
     direccion: "Av. Siempre Viva 123",
-    items: [{ id: "p3", nombre: "Pizza Suprema", cantidad: 1, precio: 15 }],
+    items: [{ id: "p3", nombre: "Pizza Suprema", cantidad: 1, precio: 15, estado: 'en_delivery' }],
     total: 15,
     estado: "en_delivery",
     pagado: true,
@@ -62,7 +62,7 @@ const MOCK_ORDERS: Order[] = [
     cliente: "Mesa 8",
     tipo: "mesa",
     mesa: "8",
-    items: [{ id: "p4", nombre: "Pasta Carbonara", cantidad: 3, precio: 36 }],
+    items: [{ id: "p4", nombre: "Pasta Carbonara", cantidad: 3, precio: 36, estado: "preparando" }],
     total: 36,
     estado: "preparando",
     pagado: false,

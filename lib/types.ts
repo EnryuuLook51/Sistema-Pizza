@@ -14,7 +14,7 @@ export interface UserProfile {
 }
 
 // TIPOS DE PEDIDOS
-export type OrderStatus = 'pendiente' | 'preparando' | 'listo_para_servir' | 'en_delivery' | 'entregado';
+export type OrderStatus = 'pendiente' | 'preparando' | 'horno' | 'en_corte' | 'listo_para_servir' | 'en_delivery' | 'entregado' | 'cancelado';
 export type OrderType = 'mesa' | 'llevar' | 'delivery';
 
 export interface OrderItem {
@@ -22,6 +22,15 @@ export interface OrderItem {
   nombre: string;
   cantidad: number;
   precio: number;
+  notas?: string;
+
+  // New: Item-level tracking
+  recipeId?: string; // Para vincular con la receta y sus tiempos
+  estado: OrderStatus;
+  startTime?: Date;
+  timestamps?: {
+    [key in OrderStatus]?: Date;
+  };
 }
 
 export interface Order {
@@ -32,7 +41,31 @@ export interface Order {
   direccion?: string;
   items: OrderItem[];
   total: number;
-  estado: OrderStatus;
+  estado: OrderStatus; // Estado general (ej: 'preparando' si al menos uno está en proceso)
   pagado: boolean;
   createdAt: Date;
+  startTime?: Date;
+  defectReason?: string;
+  timestamps?: {
+    [key in OrderStatus]?: Date;
+  };
+}
+
+// RECETAS
+export interface RecipeIngredient {
+  name: string;
+  amount: string;
+}
+
+export interface Recipe {
+  id: string;
+  name: string;
+  image?: string;
+  ingredients: RecipeIngredient[];
+  steps: string[];
+
+  // Tiempos limite en segundos
+  prepTime?: number; // Mesa de trabajo
+  cookTime?: number; // Horno
+  cutTime?: number;  // Expedición
 }

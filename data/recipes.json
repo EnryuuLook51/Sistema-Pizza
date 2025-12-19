@@ -1,0 +1,179 @@
+[
+  {
+    "id": "1",
+    "name": "Pizza Pepperoni Clásica",
+    "image": "https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=1000&auto=format&fit=crop",
+    "prepTime": 180,
+    "cookTime": 300,
+    "cutTime": 60,
+    "ingredients": [
+      {
+        "name": "Salsa de Tomate",
+        "amount": "80g (Espiral)"
+      },
+      {
+        "name": "Queso Mozzarella",
+        "amount": "150g"
+      },
+      {
+        "name": "Pepperoni",
+        "amount": "30 rodajas (Patrón 5-4-3)"
+      }
+    ],
+    "steps": [
+      "Extender masa a 30cm dejando borde de 2cm.",
+      "Aplicar salsa desde el centro en espiral.",
+      "Distribuir queso uniformemente sin cubrir el borde.",
+      "Colocar pepperoni de fuera hacia adentro."
+    ]
+  },
+  {
+    "id": "2",
+    "name": "Pizza Hawaiana",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Hawaiian_pizza_1.jpg",
+    "prepTime": 200,
+    "cookTime": 300,
+    "cutTime": 60,
+    "ingredients": [
+      {
+        "name": "Salsa de Tomate",
+        "amount": "80g"
+      },
+      {
+        "name": "Queso Mozzarella",
+        "amount": "140g"
+      },
+      {
+        "name": "Jamón",
+        "amount": "60g (Cuadros)"
+      },
+      {
+        "name": "Piña",
+        "amount": "50g (Drenada)"
+      }
+    ],
+    "steps": [
+      "Base estándar de salsa y queso.",
+      "Distribuir jamón equitativamente.",
+      "Colocar piña asegurando que no tenga exceso de líquido."
+    ]
+  },
+  {
+    "id": "3",
+    "name": "Pizza Suprema",
+    "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1000",
+    "prepTime": 240,
+    "cookTime": 330,
+    "cutTime": 60,
+    "ingredients": [
+      {
+        "name": "Salsa",
+        "amount": "80g"
+      },
+      {
+        "name": "Queso",
+        "amount": "150g"
+      },
+      {
+        "name": "Pepperoni",
+        "amount": "10u"
+      },
+      {
+        "name": "Pimiento",
+        "amount": "30g"
+      },
+      {
+        "name": "Cebolla",
+        "amount": "20g"
+      },
+      {
+        "name": "Champiñones",
+        "amount": "30g"
+      },
+      {
+        "name": "Carne",
+        "amount": "40g"
+      }
+    ],
+    "steps": [
+      "Extender base y salsa.",
+      "Agregar queso base.",
+      "Distribuir ingredientes en orden: carne, vegetales, pepperoni.",
+      "Toque final de queso."
+    ]
+  },
+  {
+    "id": "4",
+    "name": "Pizza 4 Quesos",
+    "image": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=1000",
+    "prepTime": 150,
+    "cookTime": 280,
+    "cutTime": 45,
+    "ingredients": [
+      {
+        "name": "Salsa Blanca",
+        "amount": "60g"
+      },
+      {
+        "name": "Mozzarella",
+        "amount": "80g"
+      },
+      {
+        "name": "Gorgonzola",
+        "amount": "40g"
+      },
+      {
+        "name": "Parmesano",
+        "amount": "30g (Polvo)"
+      },
+      {
+        "name": "Provolone",
+        "amount": "40g"
+      }
+    ],
+    "steps": [
+      "Base de salsa blanca.",
+      "Mezclar quesos y distribuir uniformemente.",
+      "Espolvorear orégano al final."
+    ]
+  },
+  {
+    "id": "5",
+    "name": "Pizza Vegetariana",
+    "image": "https://images.unsplash.com/photo-1571407921588-403ddc45eb6d?q=80&w=1000",
+    "prepTime": 220,
+    "cookTime": 330,
+    "cutTime": 60,
+    "ingredients": [
+      {
+        "name": "Salsa",
+        "amount": "80g"
+      },
+      {
+        "name": "Queso",
+        "amount": "140g"
+      },
+      {
+        "name": "Pimiento Rojo",
+        "amount": "40g"
+      },
+      {
+        "name": "Aceitunas",
+        "amount": "30g"
+      },
+      {
+        "name": "Choclo",
+        "amount": "30g"
+      },
+      {
+        "name": "Tomate Cherry",
+        "amount": "50g"
+      }
+    ],
+    "steps": [
+      "Base estándar.",
+      "Distribuir vegetales procurando colores vivos.",
+      "Aceitunas al final para decorar."
+    ]
+  }
+]

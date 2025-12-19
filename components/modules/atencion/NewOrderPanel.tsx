@@ -48,7 +48,8 @@ export default function NewOrderPanel({ onCreate }: NewOrderPanelProps) {
           id: Math.random().toString(),
           nombre: `Pizza ${pizzaType} ${extras.length > 0 ? '+ Extras' : ''}`,
           cantidad: 1,
-          precio: basePrice + extrasPrice
+          precio: basePrice + extrasPrice,
+          estado: 'pendiente',
         }
       ],
       total: basePrice + extrasPrice,
