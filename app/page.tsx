@@ -1,65 +1,76 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+import { Loader2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+// Componente de carga para mostrar mientras llega el dashboard
+const DashboardSkeleton = () => (
+  <div className="flex bg-gray-50 h-screen w-full items-center justify-center flex-col gap-4">
+    <Loader2 className="h-10 w-10 animate-spin text-red-600" />
+    <p className="text-gray-500 font-medium">Cargando interfaz...</p>
+  </div>
+);
+
+// Imports Dinámicos: Solo se descargará el JS del componente que se use
+const DashboardPropietario = dynamic(() => import('@/components/DashboardPropietario'), {
+  loading: () => <DashboardSkeleton />,
+});
+const DashboardGerente = dynamic(() => import('@/components/DashboardGerente'), {
+  loading: () => <DashboardSkeleton />,
+});
+const DashboardPizzero = dynamic(() => import('@/components/DashboardPizzero'), {
+  loading: () => <DashboardSkeleton />,
+});
+const DashboardAtencion = dynamic(() => import('@/components/DashboardAtencion'), {
+  loading: () => <DashboardSkeleton />,
+});
+const DashboardDelivery = dynamic(() => import('@/components/DashboardDelivery'), {
+  loading: () => <DashboardSkeleton />,
+});
+
+import { useAuth } from '@/components/ProveedorAutenticacion';
+
+export default function HomePage() {
+  const { profile, loading } = useAuth();
+
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
+
+  if (!profile) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-10 bg-gray-50">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-2">Perfil No Encontrado</h1>
+          <p className="text-gray-600">
+            Tu cuenta ha sido creada, pero no tiene un rol asignado.
+            <br />Contacte al Administrador.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+    );
+  }
+
+  // RENDERIZADO CONDICIONAL DE TUS HTMLs
+  switch (profile.rol) {
+    case 'admin':
+      return <DashboardPropietario />;
+    case 'gerente':
+      return <DashboardGerente />;
+    case 'cocina':
+      return <DashboardPizzero />;
+    case 'atencion':
+      return <DashboardAtencion />;
+    case 'delivery':
+      return <DashboardDelivery />;
+    default:
+      return (
+        <div className="flex min-h-screen items-center justify-center p-10">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-2">Acceso Restringido</h1>
+            <p className="text-gray-600">Rol no asignado o desconocido. Contacte al Admin.</p>
+          </div>
         </div>
-      </main>
-    </div>
-  );
+      );
+  }
 }
