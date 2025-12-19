@@ -5,7 +5,30 @@ import { CheckCircle, Clock, LogOut, MapPin, Truck } from "lucide-react";
 import { useState } from "react";
 
 // MOCK DATA (Simulando pedidos asignados a este delivery)
-// ... (omitted)
+const MOCK_DELIVERY_ORDERS: Order[] = [
+  {
+    id: "103",
+    cliente: "Ana García",
+    tipo: "delivery",
+    direccion: "Av. Siempre Viva 123, Springfield",
+    items: [{ id: "p3", nombre: "Pizza Suprema", cantidad: 1, precio: 15 }],
+    total: 15,
+    estado: "en_delivery",
+    pagado: false,
+    createdAt: new Date(),
+  },
+  {
+    id: "105",
+    cliente: "Carlos López",
+    tipo: "delivery",
+    direccion: "Calle Falsa 123",
+    items: [{ id: "p4", nombre: "Pizza Hawaiana", cantidad: 2, precio: 30 }],
+    total: 30,
+    estado: "entregado", // Historial
+    pagado: true,
+    createdAt: new Date(Date.now() - 3600000), // Hace 1 hora
+  }
+];
 
 export default function DashboardDelivery() {
   const [orders, setOrders] = useState<Order[]>(MOCK_DELIVERY_ORDERS);

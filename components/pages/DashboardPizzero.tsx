@@ -5,7 +5,32 @@ import { AlertCircle, CheckCircle, ChefHat, Clock, Flame, LogOut } from "lucide-
 import { useState } from "react";
 
 // MOCK DATA PARA COCINA
-// ... (omitted)
+const MOCK_KITCHEN_ORDERS: Order[] = [
+  {
+    id: "102",
+    cliente: "Juan Pérez",
+    tipo: "llevar",
+    items: [{ id: "p2", nombre: "Pizza Hawaiana", cantidad: 2, precio: 24 }],
+    total: 24,
+    estado: "preparando",
+    pagado: true,
+    createdAt: new Date(Date.now() - 1000 * 60 * 15), // Hace 15 min
+  },
+  {
+    id: "104",
+    cliente: "Mesa 2",
+    tipo: "mesa",
+    mesa: "2",
+    items: [
+      { id: "p4", nombre: "Pizza 4 Quesos", cantidad: 1, precio: 18 },
+      { id: "p5", nombre: "Pan de Ajo", cantidad: 1, precio: 5 }
+    ],
+    total: 23,
+    estado: "pendiente",
+    pagado: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 5), // Hace 5 min
+  }
+];
 
 export default function DashboardPizzero() {
   const [orders, setOrders] = useState<Order[]>(MOCK_KITCHEN_ORDERS);
