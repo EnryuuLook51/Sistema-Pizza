@@ -75,8 +75,13 @@ export interface Recipe {
   id: string;
   name: string;
   image?: string;
-  category: 'pizzas' | 'masas' | 'salsas'; // Added category
+  category: 'pizzas' | 'masas' | 'salsas' | 'bebidas' | 'extras'; // Added category
   tags?: string[]; // Added tags e.g. "Top Ventas"
+  prices: {
+    mediana: number;
+    familiar: number;
+  };
+  description?: string; // Marketing description
 
   ingredients: RecipeIngredient[];
   steps: RecipeStep[]; // Structured steps

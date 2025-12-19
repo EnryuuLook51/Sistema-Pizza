@@ -1,19 +1,16 @@
 "use client";
 
+import { useRecipes } from "@/hooks/useRecipes";
 import { Order, OrderItem, OrderType, Recipe } from "@/lib/types";
 import { ChevronLeft, MapPin, Plus, ShoppingBag, Trash2, Truck, Utensils } from "lucide-react";
 import dynamic from 'next/dynamic';
 import { useMemo, useState } from "react";
 
-// Import recipes directly
-import recipesData from '@/data/recipes.json';
 
 const AddressMapPicker = dynamic(() => import('./AddressMapPicker'), {
   ssr: false,
   loading: () => <div className="w-full h-48 bg-slate-100 animate-pulse rounded-lg flex items-center justify-center text-slate-400 text-xs">Cargando Mapa...</div>
 });
-
-const RECIPES = recipesData as Recipe[];
 
 const DRINKS = [
   { id: 'd1', name: 'Coca Cola 1.5L', price: 12 },
@@ -44,6 +41,9 @@ interface NewOrderPanelProps {
 }
 
 export default function NewOrderPanel({ onCreate }: NewOrderPanelProps) {
+  const { recipes } = useRecipes();
+  const RECIPES = recipes.filter(r => r.category === 'pizzas');
+
   // ORDER HEADERS
   const [orderType, setOrderType] = useState<OrderType>('llevar');
   const [clientName, setClientName] = useState("");
@@ -84,7 +84,9 @@ export default function NewOrderPanel({ onCreate }: NewOrderPanelProps) {
   const addToCart = () => {
     if (!selectedRecipe) return;
 
-    const basePrice = customSize === 'familiar' ? 35 : 25;
+    const basePrice = customSize === 'familiar'
+      ? (selectedRecipe.prices?.familiar || 0)
+      : (selectedRecipe.prices?.mediana || 0);
 
     const newItem: CartItem = {
       tempId: Math.random().toString(),
@@ -315,11 +317,11 @@ export default function NewOrderPanel({ onCreate }: NewOrderPanelProps) {
                 <div className="grid grid-cols-2 gap-3">
                   <button onClick={() => setCustomSize('mediana')} className={`p-3 rounded-xl border text-left transition-all ${customSize === 'mediana' ? 'border-red-500 bg-red-50 ring-1 ring-red-500' : 'border-slate-200'}`}>
                     <div className="font-bold text-slate-800 text-sm">Mediana</div>
-                    <div className="text-xs text-slate-500">S/. 25.00</div>
+                    <div className="text-xs text-slate-500">S/. {selectedRecipe.prices?.mediana?.toFixed(2) || '??'}</div>
                   </button>
                   <button onClick={() => setCustomSize('familiar')} className={`p-3 rounded-xl border text-left transition-all ${customSize === 'familiar' ? 'border-red-500 bg-red-50 ring-1 ring-red-500' : 'border-slate-200'}`}>
                     <div className="font-bold text-slate-800 text-sm">Familiar</div>
-                    <div className="text-xs text-slate-500">S/. 35.00</div>
+                    <div className="text-xs text-slate-500">S/. {selectedRecipe.prices?.familiar?.toFixed(2) || '??'}</div>
                   </button>
                 </div>
               </div>
@@ -363,7 +365,7 @@ export default function NewOrderPanel({ onCreate }: NewOrderPanelProps) {
             <div className="p-4 border-t border-slate-100">
               <button onClick={addToCart} className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-red-200 transition-all active:scale-95">
                 <span>Agregar al Pedido</span>
-                <span>S/. {customSize === 'familiar' ? '35.00' : '25.00'}</span>
+                <span>S/. {customSize === 'familiar' ? selectedRecipe.prices?.familiar?.toFixed(2) : selectedRecipe.prices?.mediana?.toFixed(2)}</span>
               </button>
             </div>
           </div>

@@ -149,16 +149,29 @@ export default function TiemposView({ orders }: TiemposViewProps) {
                       <td className="px-6 py-4">{new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                       <td className="px-6 py-4 text-center">
                         <span className={`px-2 py-1 rounded font-bold ${prep > 15 ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
-                          {prep > 0 ? prep : '-'}
+                          {prep > 0 ? prep : (
+                            // Fallback visuals for incomplete data
+                            (o.timestamps?.listo_para_servir && o.createdAt) ?
+                              Math.round((new Date(o.timestamps.listo_para_servir).getTime() - new Date(o.createdAt).getTime()) / 60000) : '-'
+                          )}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span className={`px-2 py-1 rounded font-bold ${del > 25 ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
-                          {del > 0 ? del : '-'}
+                          {del > 0 ? del : (
+                            // Fallback for delivery
+                            (o.estado === 'entregado' && o.timestamps?.entregado && o.createdAt) ?
+                              // Si no tenemos inicio de delivery, asumimos (Total - Prep) o simplemente no mostramos nada
+                              // Mejor mostrar '-' para ser honestos, pero si el usuario insiste...
+                              '-' : '-'
+                          )}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center font-bold text-slate-900">
-                        {total > 0 ? total : '-'}
+                        {total > 0 ? total :
+                          (o.estado === 'entregado' && o.createdAt && o.timestamps?.entregado) ?
+                            Math.round((new Date(o.timestamps.entregado).getTime() - new Date(o.createdAt).getTime()) / 60000) : '-'
+                        }
                       </td>
                     </tr>
                   );

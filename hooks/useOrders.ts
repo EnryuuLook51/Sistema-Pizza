@@ -135,10 +135,30 @@ export function useOrders() {
       const orderRef = doc(db, "orders", orderId);
 
       // Sanitizamos TODO el objeto antes de enviar
-      await updateDoc(orderRef, sanitize({
+      // Sanitizamos TODO el objeto antes de enviar
+      const updatePayload: any = {
         items: updatedItems,
         estado: newOrderState
-      }));
+      };
+
+      // Si el estado de la orden cambió, registramos el timestamp
+      if (newOrderState !== order.estado) {
+        // Necesitamos la sintaxis de punto para actualizar un campo anidado sin sobrescribir todo el mapa
+        // Pero updateDoc con nesting requiere sintaxis "field.subfield" como clave string
+        // Como estamos enviando un objeto 'sanitize', mejor mergeamos el timestamp
+        // OJO: Firestore updateDoc mergea campos de primer nivel, pero timestamps es un mapa.
+        // Lo mejor es usar notation de punto para timestamps.newState si es posible,
+        // pero aqui estamos construyendo un objeto.
+        // Vamos a asumir que 'timestamps' ya existe en el objeto 'order', lo clonamos y agregamos.
+
+        const currentTimestamps = order.timestamps || {};
+        updatePayload.timestamps = {
+          ...currentTimestamps,
+          [newOrderState]: new Date()
+        };
+      }
+
+      await updateDoc(orderRef, sanitize(updatePayload));
 
     } catch (error) {
       console.error("Error updating item status:", error);

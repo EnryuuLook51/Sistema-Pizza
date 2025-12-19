@@ -29,6 +29,7 @@ import TiemposView from "../modules/gerente/TiemposView";
 export default function DashboardGerente() {
   const { user, profile } = useAuth();
   const { orders } = useOrders();
+
   const [activeView, setActiveView] = useState<'dashboard' | 'pedidos' | 'tiempos' | 'defectos' | 'reportes'>('dashboard');
 
   const navItems = [
@@ -39,10 +40,14 @@ export default function DashboardGerente() {
     { id: 'reportes', label: 'Reportes', icon: BarChart3 },
   ];
 
+  // State for chart interactivity
+  const [hoveredBar, setHoveredBar] = useState<{ hour: number, val: number } | null>(null);
+
   // METRICS CALCULATIONS
   const todayStr = new Date().toDateString();
   const activeOrders = orders.filter(o => o.estado !== 'entregado' && o.estado !== 'cancelado');
 
+  // ... (Kitchen Avg Time and Defects Logic remains same)
   // Kitchen Avg Time (Completed Today)
   const completedToday = orders.filter(o =>
     o.estado === 'entregado' &&
@@ -76,26 +81,31 @@ export default function DashboardGerente() {
   const defectsToday = orders.filter(o => {
     const isToday = o.createdAt && new Date(o.createdAt).toDateString() === todayStr;
     const isCancelled = o.estado === 'cancelado';
-    const hasDefectNote = o.items.some(i => i.notas?.toLowerCase().includes('defecto') || i.notas?.toLowerCase().includes('error'));
-    return isToday && (isCancelled || hasDefectNote);
+    const hasDefectNote = o.items.some(i => i.notas?.toLowerCase().includes('defecto') || i.notas?.toLowerCase().includes('error')); // Double check potential typo in original code
+    // Original had `i.notas`. Keeping consistent.
+    const noteCheck = o.items.some(i => i.notas?.toLowerCase().includes('defecto') || i.notas?.toLowerCase().includes('error'));
+    return isToday && (isCancelled || noteCheck);
   });
 
-  // Production per Hour Calculation
+  // Production per Hour Calculation (DYNAMIC 24H)
   const hourlyProduction = new Array(24).fill(0);
   orders.forEach(o => {
+    // Count orders that are 'entregado' OR 'listo_para_servir' as "Production"
     if ((o.estado === 'entregado' || o.estado === 'listo_para_servir') && o.createdAt) {
       const date = new Date(o.createdAt);
+      // Ensure we are looking at TODAY local time
       if (date.toDateString() === todayStr) {
         hourlyProduction[date.getHours()]++;
       }
     }
   });
 
-  const relevantHours = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
-  const maxProd = Math.max(...hourlyProduction) || 1;
+  // Auto-scaling max value
+  const realMax = Math.max(...hourlyProduction);
+  const maxProd = realMax > 0 ? realMax * 1.2 : 5; // Scale with buffer, default 5 so empty chart looks ok
 
-  // Defect Distribution Logic
   const defectStats: Record<string, number> = { 'Otros': 0 };
+  // ... (Defect stats logic remains same)
   defectsToday.forEach(o => {
     let reason = 'Otros';
     if (o.defectReason) reason = o.defectReason;
@@ -120,8 +130,8 @@ export default function DashboardGerente() {
     }))
     .sort((a, b) => b.val - a.val);
 
-  // Helper for status colors
   const stateColors = (state: OrderStatus) => {
+    // ... (unchanged)
     switch (state) {
       case 'pendiente': return 'bg-slate-100 text-slate-600 border-slate-200';
       case 'preparando': return 'bg-blue-50 text-blue-600 border-blue-100';
@@ -134,14 +144,14 @@ export default function DashboardGerente() {
     }
   };
 
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-slate-50">
-
-      {/* SIDEBAR */}
+      {/* ... (Sidebar and Layout logic unchanged ... Keep navItems logic etc inside the function if needed for context but this block is ostensibly inside the function) */}
       <aside className="w-72 flex-shrink-0 flex flex-col border-r border-slate-200 bg-white hidden lg:flex z-20">
+        {/* ... contents ... */}
         <div className="flex h-full flex-col justify-between p-6">
           <div className="flex flex-col gap-6">
-            {/* User Profile */}
             <div className="flex gap-4 items-center pb-6 border-b border-slate-100">
               <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 shadow-sm ring-2 ring-slate-100"
                 style={{ backgroundImage: user?.photoURL ? `url(${user.photoURL})` : 'none' }}>
@@ -153,7 +163,6 @@ export default function DashboardGerente() {
               </div>
             </div>
 
-            {/* Navigation */}
             <nav className="flex flex-col gap-2">
               {navItems.map((item) => {
                 const isActive = activeView === item.id;
@@ -188,9 +197,7 @@ export default function DashboardGerente() {
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col h-full min-w-0 bg-slate-50 relative overflow-hidden">
-
         {/* HEADER */}
         <header className="flex items-center justify-between whitespace-nowrap border-b border-slate-200 px-6 py-4 bg-white/95 backdrop-blur-sm z-10 sticky top-0">
           <div className="flex items-center gap-4 lg:gap-8">
@@ -203,7 +210,6 @@ export default function DashboardGerente() {
               </div>
               <h2 className="text-slate-900 text-lg font-bold leading-tight tracking-tight hidden sm:block">Dashboard Operativo</h2>
             </div>
-            {/* Search Bar */}
             <div className="hidden md:flex items-center h-10 w-64 bg-slate-100 rounded-lg px-3 focus-within:ring-2 focus-within:ring-red-100 transition-all">
               <Search size={18} className="text-slate-400 mr-2" />
               <input
@@ -237,8 +243,8 @@ export default function DashboardGerente() {
         ) : activeView === 'dashboard' ? (
           <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth animate-in fade-in zoom-in-95 duration-300">
             <div className="max-w-[1200px] mx-auto flex flex-col gap-8">
+              {/* ... Dashboard Header & Cards ... */}
 
-              {/* Dashboard Summary Header */}
               <div className="flex flex-wrap justify-between items-end gap-4">
                 <div className="flex flex-col gap-1">
                   <h1 className="text-slate-900 text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Resumen Operativo</h1>
@@ -252,7 +258,7 @@ export default function DashboardGerente() {
                 </div>
               </div>
 
-              {/* Stats Grid */}
+              {/* Stats Grid - Using calculated vars */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Active Orders */}
                 <div className="flex flex-col gap-3 rounded-xl p-5 bg-white border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
@@ -293,7 +299,7 @@ export default function DashboardGerente() {
                   </div>
                 </div>
 
-                {/* On Time % (Simulated based on standard 15m) */}
+                {/* On Time % */}
                 <div className="flex flex-col gap-3 rounded-xl p-5 bg-white border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
                   <div className="absolute -top-2 -right-2 p-4 opacity-5 group-hover:opacity-10 transition-opacity rotate-12">
                     <Bell size={80} className="text-slate-800" />
@@ -334,37 +340,62 @@ export default function DashboardGerente() {
                 </div>
               </div>
 
+
               {/* Charts Section */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Hourly Production Chart */}
-                <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                {/* Hourly Production Chart (FIXED & DYNAMIC) */}
+                <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6 relative z-0">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3 className="text-lg font-bold text-slate-900">Producción por Hora</h3>
-                      <p className="text-slate-500 text-sm">Pizzas completadas hoy</p>
+                      <p className="text-slate-500 text-sm">Pizzas completadas hoy ({todayStr.slice(0, 10)})</p>
                     </div>
                     <BarChart3 className="text-slate-300" />
                   </div>
-                  <div className="flex items-end justify-between h-48 gap-2">
-                    {relevantHours.map((hour) => {
-                      const val = hourlyProduction[hour];
+
+                  <div className="relative flex items-end justify-between h-48 gap-1 pt-6" onMouseLeave={() => setHoveredBar(null)}>
+                    {/* Background Grid Lines optional, keeping simple for clean bar look */}
+
+                    {hourlyProduction.map((val, hour) => {
                       const height = maxProd > 0 ? (val / maxProd) * 100 : 0;
+                      const isHovered = hoveredBar?.hour === hour;
+
+                      // Only show labels for even hours to prevent crowding, or if hovered
+                      const showLabel = hour % 2 === 0;
+
                       return (
-                        <div key={hour} className="flex-1 flex flex-col items-center gap-2 group">
-                          <div className="w-full bg-slate-100 rounded-t-lg relative overflow-hidden h-full flex items-end">
+                        <div
+                          key={hour}
+                          className="flex-1 flex flex-col items-center justify-end h-full gap-1 group relative"
+                          onMouseEnter={() => setHoveredBar({ hour, val })}
+                        >
+                          {/* The Bar */}
+                          <div className="w-full h-full flex items-end relative px-[1px]">
                             <div
-                              className="w-full bg-red-600 rounded-t-lg transition-all duration-500 group-hover:bg-red-500 min-h-[4px]"
-                              style={{ height: `${height}%` }}
+                              className={`w-full rounded-t-sm transition-all duration-300 ${val > 0 ? 'bg-red-600' : 'bg-slate-100'} ${isHovered ? 'bg-red-500 scale-105' : ''}`}
+                              style={{ height: `${height > 0 ? height : 5}%` }} // Min height 5% for visual placeholder
                             ></div>
                           </div>
-                          <span className="text-xs font-semibold text-slate-400">{hour}:00</span>
+
+                          {/* X-axis Label */}
+                          <span className={`text-[10px] font-semibold text-slate-400 ${showLabel ? 'visible' : 'invisible'}`}>
+                            {hour}h
+                          </span>
+
+                          {/* Tooltip */}
+                          {isHovered && (
+                            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs rounded px-2 py-1 shadow-xl whitespace-nowrap z-20 pointer-events-none">
+                              <span className="font-bold">{val} pizzas</span>
+                              <div className="text-[10px] text-slate-300 opacity-80">{hour}:00 - {hour}:59</div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Defects Distribution */}
+                {/* Defects Distribution (Existing Logic) */}
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                   <div className="flex items-center justify-between mb-6">
                     <div>

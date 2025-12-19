@@ -22,12 +22,13 @@ import {
 import { useState } from "react";
 import StandardsView from "../modules/pizzero/StandardsView";
 import FinanzasView from "../modules/propietario/FinanzasView";
+import MenuGestionView from "../modules/propietario/MenuGestionView";
 import UsuariosView from "../modules/propietario/UsuariosView";
 
 export default function DashboardPropietario() {
   const { user, profile } = useAuth();
   const { orders } = useOrders(); // For metrics
-  const [activeView, setActiveView] = useState<'global' | 'finanzas' | 'usuarios' | 'estandares'>('global');
+  const [activeView, setActiveView] = useState<'global' | 'finanzas' | 'usuarios' | 'estandares' | 'menu'>('global');
 
   // Existing User State
   const [newUser, setNewUser] = useState({
@@ -75,6 +76,7 @@ export default function DashboardPropietario() {
   const navItems = [
     { id: 'global', label: 'Visión Global', icon: LayoutDashboard },
     { id: 'finanzas', label: 'Finanzas', icon: Wallet },
+    { id: 'menu', label: 'Gestión Menú', icon: Pizza },
     { id: 'usuarios', label: 'Personal', icon: Users },
     { id: 'estandares', label: 'Estándares', icon: Building2 },
   ];
@@ -327,6 +329,10 @@ export default function DashboardPropietario() {
 
           {activeView === 'finanzas' && (
             <FinanzasView orders={orders} />
+          )}
+
+          {activeView === 'menu' && (
+            <MenuGestionView />
           )}
 
         </div>

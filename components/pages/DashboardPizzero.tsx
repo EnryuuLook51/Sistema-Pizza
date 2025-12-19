@@ -7,8 +7,9 @@ import KDSBoard from '@/components/modules/pizzero/KDSBoard';
 import RecipesView from '@/components/modules/pizzero/RecipesView';
 import StandardsView from '@/components/modules/pizzero/StandardsView';
 import { useOrders } from '@/hooks/useOrders';
+import { useRecipes } from "@/hooks/useRecipes";
 import { auth } from "@/lib/firebase";
-import { OrderStatus, Recipe } from '@/lib/types';
+import { OrderStatus } from '@/lib/types';
 import { signOut } from "firebase/auth";
 import {
   BookOpen,
@@ -22,16 +23,13 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import recipesData from '@/data/recipes.json';
-
-// --- MOCK DATA ---
-const MOCK_RECIPES: Recipe[] = recipesData as Recipe[];
 
 // --- COMPONENTE PRINCIPAL ---
 
 export default function DashboardPizzero() {
   const { user, profile } = useAuth();
   const { orders, updateOrderItemStatus } = useOrders(); // Integración Firestore
+  const { recipes } = useRecipes();
 
   const [activeTab, setActiveTab] = useState<'tablero' | 'recetas' | 'estandares' | 'historial'>('tablero');
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -156,12 +154,12 @@ export default function DashboardPizzero() {
             moveItem={moveItem}
             onReportDefect={(data) => setShowDefectModal({ orderId: data.orderId, itemId: data.itemId })}
             currentTime={currentTime}
-            recipes={MOCK_RECIPES}
+            recipes={recipes}
           />
         )}
 
         {activeTab === 'recetas' && (
-          <RecipesView recipes={MOCK_RECIPES} />
+          <RecipesView recipes={recipes} />
         )}
 
         {activeTab === 'estandares' && (
