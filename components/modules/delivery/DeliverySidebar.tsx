@@ -26,7 +26,7 @@ export default function DeliverySidebar({
   const activeOrder = inTransit[0];
 
   return (
-    <aside className="w-full max-w-[480px] flex flex-col h-full bg-white border-r border-slate-200 z-20 shadow-2xl shrink-0 relative">
+    <aside className="w-full md:w-[420px] flex flex-col h-full bg-white border-r border-slate-200 z-20 shadow-2xl shrink-0 relative overflow-hidden">
 
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-white">
