@@ -75,7 +75,6 @@ export function DetailModal({ item, recipe, onClose }: CustomDetailModalProps) {
                     return (
                       <div key={idx} className={`flex justify-between items-center p-4 rounded-xl border transition-all ${isRemoved ? 'bg-slate-100 border-transparent opacity-40' : 'bg-white border-slate-200 shadow-sm'}`}>
                         <span className={`font-bold ${isRemoved ? 'line-through text-slate-400' : 'text-slate-700'}`}>{ing.name}</span>
-                        {!isRemoved && <span className="text-xs font-mono bg-slate-100 px-2 py-1 rounded text-slate-500 font-bold">{ing.amount}</span>}
                       </div>
                     );
                   })}
@@ -92,7 +91,8 @@ export function DetailModal({ item, recipe, onClose }: CustomDetailModalProps) {
                   {recipe.steps.map((step, idx) => (
                     <div key={idx} className="relative group">
                       <span className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-white border-2 border-blue-500 ring-4 ring-slate-50 group-hover:scale-110 transition-transform"></span>
-                      <p className="text-slate-600 leading-relaxed font-medium text-base group-hover:text-slate-900 transition-colors">{step}</p>
+                      <h4 className="text-slate-900 font-bold text-sm mb-1">{step.title}</h4>
+                      <p className="text-slate-600 leading-relaxed font-medium text-base group-hover:text-slate-900 transition-colors">{step.description}</p>
                     </div>
                   ))}
                 </div>

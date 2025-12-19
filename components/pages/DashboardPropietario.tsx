@@ -9,16 +9,20 @@ import { doc, setDoc, Timestamp } from "firebase/firestore";
 import {
   Building2,
   ChevronRight,
+  CreditCard,
   DollarSign,
   LayoutDashboard,
   LogOut,
   PieChart,
-  UserPlus,
+  Pizza,
+  TrendingUp,
   Users,
   Wallet
 } from "lucide-react";
 import { useState } from "react";
 import StandardsView from "../modules/pizzero/StandardsView";
+import FinanzasView from "../modules/propietario/FinanzasView";
+import UsuariosView from "../modules/propietario/UsuariosView";
 
 export default function DashboardPropietario() {
   const { user, profile } = useAuth();
@@ -150,102 +154,8 @@ export default function DashboardPropietario() {
         <div className="flex-1 overflow-y-auto p-8">
 
           {activeView === 'usuarios' && (
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900">Gestión de Personal</h3>
-                    <p className="text-slate-500 text-sm">Registrar nuevos empleados y asignar roles</p>
-                  </div>
-                  <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold border border-blue-100">
-                    Admin Access
-                  </div>
-                </div>
-
-                <div className="p-8">
-                  <form onSubmit={handleCreateUser} className="space-y-6 max-w-2xl">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">Nombre Completo</label>
-                        <input
-                          type="text"
-                          required
-                          value={newUser.nombre}
-                          onChange={e => setNewUser({ ...newUser, nombre: e.target.value })}
-                          className="w-full rounded-lg border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 py-2.5"
-                          placeholder="Ej. Juan Pérez"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">Rol Asignado</label>
-                        <select
-                          value={newUser.rol}
-                          onChange={e => setNewUser({ ...newUser, rol: e.target.value as UserRole })}
-                          className="w-full rounded-lg border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 py-2.5"
-                        >
-                          <option value="admin">Administrador</option>
-                          <option value="gerente">Gerente</option>
-                          <option value="pizzero">Pizzero (Cocina)</option>
-                          <option value="atencion">Atención al Cliente</option>
-                          <option value="delivery">Delivery</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">Correo Corporativo</label>
-                      <div className="relative">
-                        <input
-                          type="email"
-                          required
-                          value={newUser.email}
-                          onChange={e => setNewUser({ ...newUser, email: e.target.value })}
-                          className="w-full rounded-lg border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 py-2.5 pl-10"
-                          placeholder="usuario@pizzeria.com"
-                        />
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <span className="text-slate-400">@</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">Contraseña Inicial</label>
-                      <input
-                        type="password"
-                        required
-                        minLength={6}
-                        value={newUser.password}
-                        onChange={e => setNewUser({ ...newUser, password: e.target.value })}
-                        className="w-full rounded-lg border-slate-300 shadow-sm focus:border-red-500 focus:ring-red-500 py-2.5"
-                        placeholder="••••••••"
-                      />
-                      <p className="mt-1 text-xs text-slate-400">Mínimo 6 caracteres.</p>
-                    </div>
-
-                    <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                      <p className="text-xs text-yellow-600 bg-yellow-50 px-3 py-2 rounded-lg max-w-xs border border-yellow-100">
-                        <strong>Nota:</strong> Crear usuario cerrará la sesión actual debido a políticas de seguridad.
-                      </p>
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className="flex justify-center items-center gap-2 py-2.5 px-6 border border-transparent rounded-lg shadow-md text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transition-all disabled:opacity-50 hover:shadow-lg"
-                      >
-                        <UserPlus size={18} />
-                        Registrar Usuario
-                      </button>
-                    </div>
-                  </form>
-
-                  {message && (
-                    <div className={`mt-6 p-4 rounded-lg text-sm font-medium flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 ${message.includes('Error') ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'}`}>
-                      {message.includes('Error') ? <div className="size-2 rounded-full bg-red-500" /> : <div className="size-2 rounded-full bg-green-500" />}
-                      {message}
-                    </div>
-                  )}
-                </div>
-              </div>
+            <div className="bg-slate-50">
+              <UsuariosView />
             </div>
           )}
 
@@ -267,7 +177,7 @@ export default function DashboardPropietario() {
                   </div>
                   <div>
                     <p className="text-slate-500 text-sm font-medium">Ventas Hoy (Est.)</p>
-                    <h3 className="text-3xl font-bold text-slate-900 mt-1">${(orders.filter(o => new Date(o.createdAt).toDateString() === new Date().toDateString() && o.estado !== 'cancelado').reduce((acc, o) => acc + (o.items.length * 12.50), 0)).toFixed(2)}</h3>
+                    <h3 className="text-3xl font-bold text-slate-900 mt-1">${(orders.filter(o => new Date(o.createdAt).toDateString() === new Date().toDateString() && o.estado !== 'cancelado').reduce((acc, o) => acc + (o.total || o.items.length * 12.50), 0)).toFixed(2)}</h3>
                   </div>
                 </div>
 
@@ -295,7 +205,13 @@ export default function DashboardPropietario() {
                   </div>
                   <div>
                     <p className="text-slate-500 text-sm font-medium">Ticket Promedio</p>
-                    <h3 className="text-3xl font-bold text-slate-900 mt-1">$12.50</h3>
+                    <h3 className="text-3xl font-bold text-slate-900 mt-1">
+                      ${(() => {
+                        const todayOrders = orders.filter(o => new Date(o.createdAt).toDateString() === new Date().toDateString() && o.estado !== 'cancelado');
+                        const totalSales = todayOrders.reduce((acc, o) => acc + (o.total || o.items.length * 12.50), 0);
+                        return todayOrders.length > 0 ? (totalSales / todayOrders.length).toFixed(2) : "0.00";
+                      })()}
+                    </h3>
                   </div>
                 </div>
 
@@ -333,23 +249,43 @@ export default function DashboardPropietario() {
 
                   {/* SVG Chart */}
                   <div className="flex-1 flex items-end justify-between h-64 gap-3">
-                    {[65, 45, 75, 55, 85, 95, 60].map((val, idx) => (
-                      <div key={idx} className="flex-1 flex flex-col items-center gap-3 group cursor-pointer">
-                        <div className="w-full bg-slate-50 rounded-lg relative overflow-hidden h-full flex items-end">
-                          <div
-                            className="w-full bg-red-600 opacity-90 group-hover:opacity-100 transition-all duration-300 rounded-lg shadow-sm"
-                            style={{ height: `${val}%` }}
-                          >
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">
-                              ${(val * 15).toFixed(0)}
+                    {(() => {
+                      const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+                      const today = new Date();
+                      const last7Days = Array.from({ length: 7 }, (_, i) => {
+                        const d = new Date(today);
+                        d.setDate(d.getDate() - (6 - i));
+                        return d;
+                      });
+
+                      const salesData = last7Days.map(date => {
+                        const dayStr = date.toDateString();
+                        const dailyTotal = orders
+                          .filter(o => o.createdAt && new Date(o.createdAt).toDateString() === dayStr && o.estado !== 'cancelado')
+                          .reduce((sum, o) => sum + (o.total || o.items.length * 12.50), 0);
+                        return { day: days[date.getDay()], val: dailyTotal, fullDate: date };
+                      });
+
+                      const maxSale = Math.max(...salesData.map(d => d.val), 100); // Avoid div by 0
+
+                      return salesData.map((data, idx) => (
+                        <div key={idx} className="flex-1 flex flex-col items-center gap-3 group cursor-pointer">
+                          <div className="w-full bg-slate-50 rounded-lg relative overflow-hidden h-full flex items-end">
+                            <div
+                              className="w-full bg-red-600 opacity-90 group-hover:opacity-100 transition-all duration-300 rounded-lg shadow-sm"
+                              style={{ height: `${(data.val / maxSale) * 100}%`, minHeight: data.val > 0 ? '4px' : '0' }}
+                            >
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap z-20">
+                                ${data.val.toFixed(2)}
+                              </div>
                             </div>
                           </div>
+                          <span className={`text-xs font-bold ${data.fullDate.toDateString() === today.toDateString() ? 'text-red-600' : 'text-slate-400'} group-hover:text-slate-600`}>
+                            {data.day}
+                          </span>
                         </div>
-                        <span className="text-xs font-bold text-slate-400 group-hover:text-slate-600">
-                          {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'][idx]}
-                        </span>
-                      </div>
-                    ))}
+                      ));
+                    })()}
                   </div>
                 </div>
 
@@ -360,8 +296,8 @@ export default function DashboardPropietario() {
                     {orders.slice(0, 5).map(order => (
                       <div key={order.id} className="flex items-center gap-4 p-3 hover:bg-slate-50 rounded-lg transition-colors border border-transparent hover:border-slate-100">
                         <div className={`size-10 rounded-full flex items-center justify-center flex-shrink-0 ${order.estado === 'entregado' ? 'bg-green-100 text-green-600' :
-                            order.estado === 'cancelado' ? 'bg-red-100 text-red-600' :
-                              'bg-blue-100 text-blue-600'
+                          order.estado === 'cancelado' ? 'bg-red-100 text-red-600' :
+                            'bg-blue-100 text-blue-600'
                           }`}>
                           {order.estado === 'entregado' ? <DollarSign size={18} /> :
                             order.estado === 'cancelado' ? <TrendingUp size={18} /> :
@@ -390,11 +326,7 @@ export default function DashboardPropietario() {
           )}
 
           {activeView === 'finanzas' && (
-            <div className="flex flex-col items-center justify-center h-96 text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-              <DollarSign size={48} className="mb-4 opacity-50" />
-              <h3 className="text-lg font-bold text-slate-600">Módulo Financiero</h3>
-              <p>Detalle de ingresos y gastos.</p>
-            </div>
+            <FinanzasView orders={orders} />
           )}
 
         </div>

@@ -13,13 +13,18 @@ import {
   ChevronRight,
   LayoutDashboard,
   LogOut,
+  PieChart,
   Pizza,
   Search,
   Settings,
-  Timer
+  Timer,
+  TrendingUp
 } from "lucide-react";
 import { useState } from "react";
+import DefectosView from "../modules/gerente/DefectosView";
+import PedidosView from "../modules/gerente/PedidosView";
 import ReportsView from "../modules/gerente/ReportsView";
+import TiemposView from "../modules/gerente/TiemposView";
 
 export default function DashboardGerente() {
   const { user, profile } = useAuth();
@@ -75,12 +80,52 @@ export default function DashboardGerente() {
     return isToday && (isCancelled || hasDefectNote);
   });
 
+  // Production per Hour Calculation
+  const hourlyProduction = new Array(24).fill(0);
+  orders.forEach(o => {
+    if ((o.estado === 'entregado' || o.estado === 'listo_para_servir') && o.createdAt) {
+      const date = new Date(o.createdAt);
+      if (date.toDateString() === todayStr) {
+        hourlyProduction[date.getHours()]++;
+      }
+    }
+  });
+
+  const relevantHours = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
+  const maxProd = Math.max(...hourlyProduction) || 1;
+
+  // Defect Distribution Logic
+  const defectStats: Record<string, number> = { 'Otros': 0 };
+  defectsToday.forEach(o => {
+    let reason = 'Otros';
+    if (o.defectReason) reason = o.defectReason;
+    else {
+      const notes = o.items.map(i => i.notas || '').join(' ').toLowerCase();
+      if (notes.includes('quemad')) reason = 'Borde Quemado';
+      else if (notes.includes('frio') || notes.includes('fría')) reason = 'Pizza Fría';
+      else if (notes.includes('cruda')) reason = 'Masa Cruda';
+      else if (notes.includes('ingrediente') || notes.includes('error')) reason = 'Error Ingredientes';
+      else if (o.estado === 'cancelado') reason = 'Cancelado Cliente';
+    }
+    defectStats[reason] = (defectStats[reason] || 0) + 1;
+  });
+
+  const defectChartData = Object.entries(defectStats)
+    .filter(([_, val]) => val > 0)
+    .map(([label, val]) => ({
+      label,
+      val: Math.round((val / defectsToday.length) * 100),
+      count: val,
+      color: label.includes('Quemado') ? 'bg-red-600' : label.includes('Error') ? 'bg-red-400' : 'bg-slate-400'
+    }))
+    .sort((a, b) => b.val - a.val);
+
   // Helper for status colors
   const stateColors = (state: OrderStatus) => {
     switch (state) {
       case 'pendiente': return 'bg-slate-100 text-slate-600 border-slate-200';
       case 'preparando': return 'bg-blue-50 text-blue-600 border-blue-100';
-      case 'en_horno': return 'bg-orange-50 text-orange-600 border-orange-100';
+      case 'horno': return 'bg-orange-50 text-orange-600 border-orange-100';
       case 'listo_para_servir': return 'bg-green-50 text-green-600 border-green-100';
       case 'en_delivery': return 'bg-purple-50 text-purple-600 border-purple-100';
       case 'entregado': return 'bg-slate-100 text-slate-500 border-slate-200';
@@ -182,7 +227,13 @@ export default function DashboardGerente() {
 
         {/* DYNAMIC VIEW CONTENT */}
         {activeView === 'reportes' ? (
-          <ReportsView />
+          <ReportsView orders={orders} />
+        ) : activeView === 'pedidos' ? (
+          <PedidosView orders={orders} />
+        ) : activeView === 'tiempos' ? (
+          <TiemposView orders={orders} />
+        ) : activeView === 'defectos' ? (
+          <DefectosView orders={orders} />
         ) : activeView === 'dashboard' ? (
           <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth animate-in fade-in zoom-in-95 duration-300">
             <div className="max-w-[1200px] mx-auto flex flex-col gap-8">
@@ -295,17 +346,21 @@ export default function DashboardGerente() {
                     <BarChart3 className="text-slate-300" />
                   </div>
                   <div className="flex items-end justify-between h-48 gap-2">
-                    {[12, 18, 10, 25, 30, 22, 15, 8].map((val, idx) => (
-                      <div key={idx} className="flex-1 flex flex-col items-center gap-2 group">
-                        <div className="w-full bg-slate-100 rounded-t-lg relative overflow-hidden h-full">
-                          <div
-                            className="absolute bottom-0 w-full bg-red-600 rounded-t-lg transition-all duration-500 group-hover:bg-red-500"
-                            style={{ height: `${(val / 30) * 100}%` }}
-                          ></div>
+                    {relevantHours.map((hour) => {
+                      const val = hourlyProduction[hour];
+                      const height = maxProd > 0 ? (val / maxProd) * 100 : 0;
+                      return (
+                        <div key={hour} className="flex-1 flex flex-col items-center gap-2 group">
+                          <div className="w-full bg-slate-100 rounded-t-lg relative overflow-hidden h-full flex items-end">
+                            <div
+                              className="w-full bg-red-600 rounded-t-lg transition-all duration-500 group-hover:bg-red-500 min-h-[4px]"
+                              style={{ height: `${height}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-xs font-semibold text-slate-400">{hour}:00</span>
                         </div>
-                        <span className="text-xs font-semibold text-slate-400">{12 + idx}:00</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -318,33 +373,37 @@ export default function DashboardGerente() {
                     </div>
                     <PieChart className="text-slate-300" />
                   </div>
-                  <div className="flex flex-col gap-4">
-                    {[
-                      { label: 'Borde Quemado', val: 40, color: 'bg-red-600' },
-                      { label: 'Ingr. Incorrectos', val: 25, color: 'bg-red-400' },
-                      { label: 'Retraso Cocina', val: 20, color: 'bg-red-300' },
-                      { label: 'Temp. Incorrecta', val: 15, color: 'bg-slate-300' }
-                    ].map((item, idx) => (
-                      <div key={idx} className="flex flex-col gap-1">
-                        <div className="flex justify-between text-xs font-semibold text-slate-600 mb-1">
-                          <span>{item.label}</span>
-                          <span>{item.val}%</span>
+                  {defectChartData.length > 0 ? (
+                    <div className="flex flex-col gap-4">
+                      {defectChartData.map((item, idx) => (
+                        <div key={idx} className="flex flex-col gap-1">
+                          <div className="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                            <span>{item.label}</span>
+                            <span>{item.val}%</span>
+                          </div>
+                          <div className="w-full bg-slate-100 rounded-full h-2">
+                            <div className={`h-full rounded-full ${item.color}`} style={{ width: `${item.val}%` }}></div>
+                          </div>
                         </div>
-                        <div className="w-full bg-slate-100 rounded-full h-2">
-                          <div className={`h-full rounded-full ${item.color}`} style={{ width: `${item.val}%` }}></div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-48 text-slate-400 text-sm bg-slate-50 rounded-lg">
+                      <p>No hay defectos registrados hoy</p>
+                    </div>
+                  )}
+
+                  {defectChartData.length > 0 && (
+                    <div className="mt-6 pt-6 border-t border-slate-100">
+                      <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-100">
+                        <AlertTriangle className="text-red-600 flex-shrink-0" size={20} />
+                        <div>
+                          <p className="text-sm font-bold text-red-900">Alerta de Calidad</p>
+                          <p className="text-xs text-red-700">Mayor incidencia: {defectChartData[0].label}</p>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-6 pt-6 border-t border-slate-100">
-                    <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-100">
-                      <AlertTriangle className="text-red-600 flex-shrink-0" size={20} />
-                      <div>
-                        <p className="text-sm font-bold text-red-900">Alerta de Calidad</p>
-                        <p className="text-xs text-red-700">Revisar temperatura del Horno 2 (Tendencia alta)</p>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 

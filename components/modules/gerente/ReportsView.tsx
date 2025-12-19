@@ -1,3 +1,4 @@
+import { Order } from '@/lib/types';
 import {
   AlertTriangle,
   ArrowRight,
@@ -11,7 +12,63 @@ import {
   TrendingUp
 } from 'lucide-react';
 
-export default function ReportsView() {
+interface ReportsViewProps {
+  orders: Order[];
+}
+
+export default function ReportsView({ orders }: ReportsViewProps) {
+  // Filter for today
+  const todayStr = new Date().toDateString();
+  const todayOrders = orders.filter(o => o.createdAt && new Date(o.createdAt).toDateString() === todayStr);
+  const completedOrders = todayOrders.filter(o => o.estado === 'entregado');
+
+  // 1. Avg Delivery Time
+  const deliveryTimes = completedOrders
+    .map(o => {
+      if (o.timestamps?.entregado && o.timestamps?.listo_para_servir) {
+        return (new Date(o.timestamps.entregado).getTime() - new Date(o.timestamps.listo_para_servir).getTime()) / 60000;
+      }
+      return 0;
+    })
+    .filter(t => t > 0);
+
+  const avgDeliveryTime = deliveryTimes.length > 0
+    ? Math.round(deliveryTimes.reduce((a, b) => a + b, 0) / deliveryTimes.length)
+    : 0;
+
+  // 2. Defect Rate
+  const defectOrders = todayOrders.filter(o =>
+    o.estado === 'cancelado' ||
+    o.items.some(i => i.notas?.toLowerCase().includes('defecto'))
+  );
+  const defectRate = todayOrders.length > 0
+    ? ((defectOrders.length / todayOrders.length) * 100).toFixed(1)
+    : "0.0";
+
+  // 3. Quality Score (Inverse of defect rate, simplified)
+  const qualityScore = Math.max(0, 100 - (parseFloat(defectRate) * 5)); // Penalize 5 points per 1% defect
+
+  // 4. Defect Distribution
+  const defectStats: Record<string, number> = {};
+  defectOrders.forEach(o => {
+    let reason = 'Otros';
+    const notes = o.items.map(i => i.notas || '').join(' ').toLowerCase();
+    if (notes.includes('quemad')) reason = 'Borde Quemado';
+    else if (notes.includes('frio') || notes.includes('fría')) reason = 'Pizza Fría';
+    else if (notes.includes('ingrediente')) reason = 'Ingrediente Incorrecto';
+    else if (o.estado === 'cancelado') reason = 'Cancelado Cliente';
+
+    defectStats[reason] = (defectStats[reason] || 0) + 1;
+  });
+
+  const defectChartData = Object.entries(defectStats)
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, val]) => ({
+      label,
+      width: `${(val / defectOrders.length) * 100}%`,
+      valStr: `${Math.round((val / defectOrders.length) * 100)}%`
+    }));
+
   return (
     <div className="flex-1 overflow-y-auto p-6 lg:p-8 animate-in fade-in duration-500">
       <div className="max-w-[1600px] mx-auto flex flex-col gap-8">
@@ -25,7 +82,7 @@ export default function ReportsView() {
           <div className="flex items-center gap-3">
             <button className="hidden sm:flex items-center justify-center h-10 px-5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-red-200 hover:text-red-600 font-medium text-sm transition-colors shadow-sm">
               <Calendar className="mr-2" size={18} />
-              Oct 24, 2023
+              {todayStr}
             </button>
             <button className="flex items-center justify-center h-10 px-6 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors shadow-lg shadow-red-200">
               <Download className="mr-2" size={20} />
@@ -49,6 +106,7 @@ export default function ReportsView() {
 
         {/* Actionable Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Delivery Time */}
           <div className="bg-white rounded-xl p-5 flex flex-col gap-3 border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300">
             <div className="flex justify-between items-start">
               <div className="p-2 rounded-lg bg-red-50 text-red-600 border border-red-100">
@@ -56,15 +114,16 @@ export default function ReportsView() {
               </div>
               <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
                 <TrendingDown size={14} />
-                -1.5%
+                Good
               </span>
             </div>
             <div>
               <p className="text-slate-500 text-sm font-medium">Tiempo Prom. Entrega</p>
-              <h3 className="text-3xl font-bold text-slate-900 mt-1 tracking-tight">24m 15s</h3>
+              <h3 className="text-3xl font-bold text-slate-900 mt-1 tracking-tight">{avgDeliveryTime}m</h3>
             </div>
           </div>
 
+          {/* Total Orders */}
           <div className="bg-white rounded-xl p-5 flex flex-col gap-3 border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300">
             <div className="flex justify-between items-start">
               <div className="p-2 rounded-lg bg-red-50 text-red-600 border border-red-100">
@@ -72,44 +131,42 @@ export default function ReportsView() {
               </div>
               <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
                 <TrendingUp size={14} />
-                +12%
+                Active
               </span>
             </div>
             <div>
               <p className="text-slate-500 text-sm font-medium">Total Pedidos Hoy</p>
-              <h3 className="text-3xl font-bold text-slate-900 mt-1 tracking-tight">142</h3>
+              <h3 className="text-3xl font-bold text-slate-900 mt-1 tracking-tight">{todayOrders.length}</h3>
             </div>
           </div>
 
+          {/* Defect Rate */}
           <div className="bg-white rounded-xl p-5 flex flex-col gap-3 border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300">
             <div className="flex justify-between items-start">
               <div className="p-2 rounded-lg bg-red-50 text-red-600 border border-red-100">
                 <AlertTriangle size={24} />
               </div>
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
-                <TrendingDown size={14} />
-                -0.5%
+              <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full border ${parseFloat(defectRate) > 5 ? 'text-red-600 bg-red-50 border-red-100' : 'text-emerald-600 bg-emerald-50 border-emerald-100'}`}>
+                {parseFloat(defectRate) > 5 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                {defectRate}%
               </span>
             </div>
             <div>
               <p className="text-slate-500 text-sm font-medium">Tasa de Defectos</p>
-              <h3 className="text-3xl font-bold text-slate-900 mt-1 tracking-tight">3.5%</h3>
+              <h3 className="text-3xl font-bold text-slate-900 mt-1 tracking-tight">{defectRate}%</h3>
             </div>
           </div>
 
+          {/* Quality Score */}
           <div className="bg-white rounded-xl p-5 flex flex-col gap-3 border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300">
             <div className="flex justify-between items-start">
               <div className="p-2 rounded-lg bg-red-50 text-red-600 border border-red-100">
                 <CheckCircle size={24} />
               </div>
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
-                <TrendingUp size={14} />
-                +2%
-              </span>
             </div>
             <div>
               <p className="text-slate-500 text-sm font-medium">Score de Calidad</p>
-              <h3 className="text-3xl font-bold text-slate-900 mt-1 tracking-tight">92%</h3>
+              <h3 className="text-3xl font-bold text-slate-900 mt-1 tracking-tight">{qualityScore.toFixed(0)}%</h3>
             </div>
           </div>
         </div>
@@ -120,49 +177,26 @@ export default function ReportsView() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Defectos por Tipo</h3>
-                <p className="text-slate-500 text-sm">Total: 15 incidentes</p>
+                <p className="text-slate-500 text-sm">Total: {defectOrders.length} incidentes</p>
               </div>
               <button className="text-slate-400 hover:text-red-600 transition-colors">
                 <MoreHorizontal size={20} />
               </button>
             </div>
             <div className="flex-1 flex flex-col justify-end gap-5">
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between text-xs font-semibold text-slate-600">
-                  <span>Borde Quemado</span>
-                  <span className="text-red-600">40%</span>
+              {defectChartData.length > 0 ? defectChartData.map((item, idx) => (
+                <div key={idx} className="flex flex-col gap-2">
+                  <div className="flex justify-between text-xs font-semibold text-slate-600">
+                    <span>{item.label}</span>
+                    <span className="text-red-600">{item.valStr}</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                    <div className="bg-red-600 h-full rounded-full shadow-[0_2px_10px_rgba(220,38,38,0.3)]" style={{ width: item.width }}></div>
+                  </div>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                  <div className="bg-red-600 h-full rounded-full shadow-[0_2px_10px_rgba(220,38,38,0.3)]" style={{ width: '40%' }}></div>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between text-xs font-semibold text-slate-600">
-                  <span>Ingrediente Incorrecto</span>
-                  <span>25%</span>
-                </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                  <div className="bg-red-400 h-full rounded-full" style={{ width: '25%' }}></div>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between text-xs font-semibold text-slate-600">
-                  <span>Entrega Tardía</span>
-                  <span>20%</span>
-                </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                  <div className="bg-red-300 h-full rounded-full" style={{ width: '20%' }}></div>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between text-xs font-semibold text-slate-600">
-                  <span>Pizza Fría</span>
-                  <span>15%</span>
-                </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                  <div className="bg-slate-300 h-full rounded-full" style={{ width: '15%' }}></div>
-                </div>
-              </div>
+              )) : (
+                <p className="text-slate-400 text-center text-sm py-10">Sin defectos hoy</p>
+              )}
             </div>
           </div>
 
@@ -171,14 +205,11 @@ export default function ReportsView() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Tiempos de Entrega (Por Hora)</h3>
-                <p className="text-slate-500 text-sm">Promedio: 22m hoy</p>
+                <p className="text-slate-500 text-sm">Promedio: {avgDeliveryTime}m hoy</p>
               </div>
               <div className="flex gap-4">
                 <span className="flex items-center gap-2 text-xs font-semibold text-slate-600">
                   <div className="w-2.5 h-2.5 rounded-full bg-red-600"></div> Hoy
-                </span>
-                <span className="flex items-center gap-2 text-xs font-semibold text-slate-400">
-                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div> Objetivo
                 </span>
               </div>
             </div>
@@ -200,11 +231,6 @@ export default function ReportsView() {
 
                   <path d="M0 100 Q 50 120, 100 80 T 200 60 T 300 90 T 400 40 T 500 70 V 150 H 0 Z" fill="url(#chartGradient)"></path>
                   <path d="M0 100 Q 50 120, 100 80 T 200 60 T 300 90 T 400 40 T 500 70" fill="none" stroke="#dc2626" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"></path>
-
-                  <circle cx="100" cy="80" r="5" className="fill-white stroke-red-600 stroke-[3px]"></circle>
-                  <circle cx="200" cy="60" r="5" className="fill-white stroke-red-600 stroke-[3px]"></circle>
-                  <circle cx="300" cy="90" r="5" className="fill-white stroke-red-600 stroke-[3px]"></circle>
-                  <circle cx="400" cy="40" r="5" className="fill-white stroke-red-600 stroke-[3px]"></circle>
                 </svg>
               </div>
               <div className="flex justify-between w-full text-xs font-semibold text-slate-400 mt-2 px-1">
@@ -240,39 +266,23 @@ export default function ReportsView() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                <tr className="hover:bg-slate-50 transition-colors group">
-                  <td className="px-6 py-4 font-semibold text-slate-900">#402-98</td>
-                  <td className="px-6 py-4">12:42 PM</td>
-                  <td className="px-6 py-4 font-medium text-slate-900">Juan Pérez</td>
-                  <td className="px-6 py-4 text-slate-500">2x Margherita, 1x Coca-Cola</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border border-green-200 text-green-700 bg-green-50">
-                      <CheckCircle size={14} /> Entregado
-                    </span>
-                  </td>
-                </tr>
-                <tr className="hover:bg-slate-50 transition-colors group">
-                  <td className="px-6 py-4 font-semibold text-slate-900">#402-99</td>
-                  <td className="px-6 py-4">12:55 PM</td>
-                  <td className="px-6 py-4 font-medium text-slate-900">María López</td>
-                  <td className="px-6 py-4 text-slate-500">1x Pepperoni, 1x Alitas</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border border-yellow-200 text-yellow-700 bg-yellow-50">
-                      <Timer size={14} /> En Cocina
-                    </span>
-                  </td>
-                </tr>
-                <tr className="hover:bg-slate-50 transition-colors group">
-                  <td className="px-6 py-4 font-semibold text-slate-900">#403-01</td>
-                  <td className="px-6 py-4">1:05 PM</td>
-                  <td className="px-6 py-4 font-medium text-slate-900">Carlos Ruiz</td>
-                  <td className="px-6 py-4 text-slate-500">3x Vegetariana, 2x Sprite</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-red-600 text-white shadow-sm shadow-red-200">
-                      <AlertTriangle size={14} /> Retrasado
-                    </span>
-                  </td>
-                </tr>
+                {orders.slice(0, 10).map((order) => (
+                  <tr key={order.id} className="hover:bg-slate-50 transition-colors group">
+                    <td className="px-6 py-4 font-semibold text-slate-900">#{order.id.slice(-5)}</td>
+                    <td className="px-6 py-4">{order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}</td>
+                    <td className="px-6 py-4 font-medium text-slate-900">{order.cliente}</td>
+                    <td className="px-6 py-4 text-slate-500">{order.items.map(i => `${i.cantidad}x ${i.nombre}`).join(', ')}</td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border
+                             ${order.estado === 'entregado' ? 'border-green-200 text-green-700 bg-green-50' :
+                          order.estado === 'cancelado' ? 'border-red-200 text-red-700 bg-red-50' :
+                            'border-yellow-200 text-yellow-700 bg-yellow-50'}`}>
+                        {order.estado === 'entregado' ? <CheckCircle size={14} /> : order.estado === 'cancelado' ? <AlertTriangle size={14} /> : <Timer size={14} />}
+                        {order.estado.toUpperCase()}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
